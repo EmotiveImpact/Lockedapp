@@ -28,6 +28,8 @@ type HabitsContextType = {
   removeHabit: (habitId: string) => void;
   completeDay: () => void;
   failDay: () => void;
+  isQuickActionOpen: boolean;
+  setQuickActionOpen: (open: boolean) => void;
 };
 
 const HabitsContext = createContext<HabitsContextType | undefined>(undefined);
@@ -50,12 +52,13 @@ const INITIAL_USER: User = {
   nextLevelXp: 500,
   streak: 3,
   todayCompletions: [],
-  sprintDays: Array(28).fill('pending').map((s, i) => i < 2 ? 'completed' : s), // Start with 2 completed
+  sprintDays: Array(28).fill('pending').map((s, i) => i < 2 ? 'completed' : s),
 };
 
 export function HabitsProvider({ children }: { children: ReactNode }) {
   const [habits, setHabits] = useState<Habit[]>(INITIAL_HABITS);
   const [user, setUser] = useState<User>(INITIAL_USER);
+  const [isQuickActionOpen, setQuickActionOpen] = useState(false);
   const { toast } = useToast();
 
   const toggleHabit = (habitId: string) => {
@@ -152,7 +155,7 @@ export function HabitsProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <HabitsContext.Provider value={{ habits, user, toggleHabit, addHabit, removeHabit, completeDay, failDay }}>
+    <HabitsContext.Provider value={{ habits, user, toggleHabit, addHabit, removeHabit, completeDay, failDay, isQuickActionOpen, setQuickActionOpen }}>
       {children}
     </HabitsContext.Provider>
   );

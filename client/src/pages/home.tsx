@@ -1,16 +1,16 @@
 import { motion } from "framer-motion";
-import { Settings, Bell, BarChart2, CheckSquare, Flame, User, ChevronRight, MessageSquare, Heart, MoreHorizontal } from "lucide-react";
+import { Settings, Bell, BarChart2, CheckSquare, Flame, User, MessageSquare, Heart, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { useHabits } from "@/hooks/use-habits";
 import { cn } from "@/lib/utils";
 
 export default function HomePage() {
-  const { user } = useHabits();
+  const { setQuickActionOpen } = useHabits();
   
   const categories = [
-    { name: "Today's Tasks", icon: CheckSquare, active: true, href: "/tasks" },
-    { name: "Stats", icon: BarChart2, active: false, href: "/stats" },
+    { name: "Today's Tasks", icon: CheckSquare, active: true, action: () => setQuickActionOpen(true) },
+    { name: "Stats", icon: BarChart2, active: false, href: "/profile" },
     { name: "Habits", icon: Flame, active: false, href: "/habits" },
     { name: "Me", icon: User, active: false, href: "/profile" },
   ];
@@ -27,9 +27,11 @@ export default function HomePage() {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button size="icon" variant="ghost" className="rounded-full bg-white/5 h-10 w-10">
-            <Settings size={20} className="text-primary" />
-          </Button>
+          <Link href="/profile">
+            <Button size="icon" variant="ghost" className="rounded-full bg-white/5 h-10 w-10">
+                <Settings size={20} className="text-primary" />
+            </Button>
+          </Link>
           <Button size="icon" variant="ghost" className="rounded-full bg-white/5 h-10 w-10">
             <Bell size={20} className="text-primary" />
           </Button>
@@ -39,18 +41,33 @@ export default function HomePage() {
       {/* Horizontal Categories */}
       <div className="flex gap-3 overflow-x-auto no-scrollbar mb-8">
         {categories.map((cat) => (
-          <Link key={cat.name} href={cat.href}>
+          cat.href ? (
+            <Link key={cat.name} href={cat.href}>
+                <Button
+                    variant={cat.active ? "default" : "secondary"}
+                    className={cn(
+                        "flex-shrink-0 h-14 px-6 rounded-2xl flex items-center gap-3 font-bold border-none",
+                        cat.active ? "bg-primary text-black" : "bg-white/5 text-white"
+                    )}
+                >
+                    <cat.icon size={20} />
+                    {cat.name}
+                </Button>
+            </Link>
+          ) : (
             <Button
+                key={cat.name}
+                onClick={cat.action}
                 variant={cat.active ? "default" : "secondary"}
                 className={cn(
-                    "flex-shrink-0 h-14 px-6 rounded-2xl flex items-center gap-3 font-bold",
-                    cat.active ? "bg-primary text-black" : "bg-white/5 text-white border-none"
+                    "flex-shrink-0 h-14 px-6 rounded-2xl flex items-center gap-3 font-bold border-none",
+                    cat.active ? "bg-primary text-black" : "bg-white/5 text-white"
                 )}
             >
                 <cat.icon size={20} />
                 {cat.name}
             </Button>
-          </Link>
+          )
         ))}
       </div>
 

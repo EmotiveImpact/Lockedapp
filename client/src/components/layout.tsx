@@ -1,9 +1,13 @@
 import { Link, useLocation } from "wouter";
-import { Home, Users, Compass, User, Plus } from "lucide-react";
+import { Home, Users, Compass, User, Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useHabits } from "@/hooks/use-habits";
+import { motion, AnimatePresence } from "framer-motion";
+import Dashboard from "@/pages/dashboard";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
+  const { isQuickActionOpen, setQuickActionOpen } = useHabits();
 
   const navItems = [
     { href: "/", icon: Home, label: "Home" },
@@ -22,9 +26,38 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         {children}
       </main>
 
+      {/* Quick Action Overlay (Dashboard) */}
+      <AnimatePresence>
+        {isQuickActionOpen && (
+          <motion.div 
+            initial={{ opacity: 0, y: "100%" }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: "100%" }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            className="fixed inset-0 z-[100] bg-background max-w-md mx-auto overflow-y-auto no-scrollbar"
+          >
+            <div className="relative pt-12">
+               <button 
+                onClick={() => setQuickActionOpen(false)}
+                className="absolute top-6 right-6 h-10 w-10 bg-white/5 rounded-full flex items-center justify-center text-white"
+               >
+                <X size={24} />
+               </button>
+               <Dashboard />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Center Plus Button */}
-      <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[60]">
-          <button className="h-14 w-14 bg-black border-2 border-white/10 rounded-full flex items-center justify-center text-primary shadow-2xl hover:scale-110 transition-transform">
+      <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[110]">
+          <button 
+            onClick={() => setQuickActionOpen(!isQuickActionOpen)}
+            className={cn(
+              "h-14 w-14 bg-black border-2 border-white/10 rounded-full flex items-center justify-center transition-all duration-300 shadow-2xl hover:scale-110 active:scale-95",
+              isQuickActionOpen ? "text-destructive rotate-45" : "text-primary"
+            )}
+          >
               <Plus size={32} />
           </button>
       </div>
@@ -35,23 +68,26 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             const isActive = location === item.href;
             return (
               <Link key={item.href} href={item.href}>
-                <a className={cn(
-                  "flex flex-col items-center justify-center gap-1 w-16 h-14 transition-all duration-300 group",
-                  isActive ? "text-primary" : "text-muted-foreground hover:text-foreground",
-                  idx === 1 && "mr-8",
-                  idx === 2 && "ml-8"
-                )}>
+                <a 
+                  onClick={() => setQuickActionOpen(false)}
+                  className={cn(
+                    "flex flex-col items-center justify-center gap-1 w-16 h-14 transition-all duration-300 group",
+                    isActive && !isQuickActionOpen ? "text-primary" : "text-muted-foreground hover:text-foreground",
+                    idx === 1 && "mr-8",
+                    idx === 2 && "ml-8"
+                  )}
+                >
                   <item.icon 
                     size={24} 
-                    strokeWidth={isActive ? 2.5 : 2}
+                    strokeWidth={isActive && !isQuickActionOpen ? 2.5 : 2}
                     className={cn(
                         "transition-transform duration-300",
-                        isActive && "scale-110 drop-shadow-[0_0_8px_rgba(204,255,0,0.5)]"
+                        isActive && !isQuickActionOpen && "scale-110 drop-shadow-[0_0_8px_rgba(204,255,0,0.5)]"
                     )}
                   />
                   <span className={cn(
                       "text-[10px] uppercase font-bold tracking-wider transition-opacity duration-300",
-                      isActive ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+                      isActive && !isQuickActionOpen ? "opacity-100" : "opacity-0 group-hover:opacity-100"
                   )}>
                     {item.label}
                   </span>
