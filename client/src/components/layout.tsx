@@ -22,7 +22,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <div className="absolute top-[-20%] left-[-20%] w-[50%] h-[50%] bg-primary/10 blur-[100px] rounded-full pointer-events-none" />
         <div className="absolute bottom-[-20%] right-[-20%] w-[50%] h-[50%] bg-primary/5 blur-[100px] rounded-full pointer-events-none" />
 
-      <main className="flex-1 overflow-y-auto pb-32 no-scrollbar">
+      <main className="flex-1 overflow-y-auto no-scrollbar">
         {children}
       </main>
 
@@ -33,18 +33,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             initial={{ opacity: 0, y: "100%" }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: "100%" }}
-            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            transition={{ type: "spring", damping: 30, stiffness: 200 }}
             className="fixed inset-0 z-[100] bg-background max-w-md mx-auto overflow-y-auto no-scrollbar"
           >
-            <div className="relative pt-12">
-               <button 
-                onClick={() => setQuickActionOpen(false)}
-                className="absolute top-6 right-6 h-10 w-10 bg-white/5 rounded-full flex items-center justify-center text-white"
-               >
-                <X size={24} />
-               </button>
-               <Dashboard />
-            </div>
+            <Dashboard />
           </motion.div>
         )}
       </AnimatePresence>
