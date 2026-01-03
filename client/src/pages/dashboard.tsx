@@ -44,10 +44,10 @@ export default function Dashboard() {
   return (
     <div className="flex flex-col min-h-full pb-32">
       {/* Protocol Header - The "Look" */}
-      <div className="p-8 pb-4 bg-black/80 backdrop-blur-md sticky top-0 z-40 border-b border-white/5">
-          <h1 className="text-5xl font-display font-black tracking-tighter italic leading-none">LOCKED IN</h1>
-          <div className="flex items-center justify-between mt-4">
-            <p className="text-muted-foreground text-[10px] uppercase tracking-[0.4em] font-black">SYSTEM STATUS: <span className="text-primary">LVL {user.level} ACTIVE</span></p>
+      <div className="p-8 pb-0 bg-black/80 backdrop-blur-md sticky top-0 z-40 border-b border-white/5 flex flex-col items-center">
+          <div className="w-full flex items-center justify-between absolute top-8 px-8 left-0">
+            <div className="w-10" /> {/* Spacer */}
+            <h1 className="text-5xl font-display font-black tracking-tighter italic leading-none absolute left-1/2 -translate-x-1/2">LOCKED IN</h1>
             <button 
               onClick={() => setQuickActionOpen(false)}
               className="h-10 w-10 bg-white/5 rounded-full flex items-center justify-center text-white border border-white/10 hover:bg-white/10 transition-colors"
@@ -55,43 +55,48 @@ export default function Dashboard() {
               <X size={20} />
             </button>
           </div>
+          
+          <div className="mt-20 mb-4 flex flex-col items-center">
+            <p className="text-muted-foreground text-[10px] uppercase tracking-[0.4em] font-black">SYSTEM STATUS: <span className="text-primary">LVL {user.level} ACTIVE</span></p>
+          </div>
+
+          {/* Simplified Tabs Centered */}
+          <div className="flex justify-center w-full border-t border-white/5">
+              <button 
+                  onClick={() => setActiveTab('today')}
+                  className={cn(
+                      "px-6 py-4 text-xs uppercase tracking-[0.2em] transition-all duration-300 border-b-2",
+                      activeTab === 'today' ? "border-primary text-primary font-black" : "border-transparent text-muted-foreground opacity-30"
+                  )}
+              >
+                  Today
+              </button>
+              <button 
+                  onClick={() => setActiveTab('habits')}
+                  className={cn(
+                      "px-6 py-4 text-xs uppercase tracking-[0.2em] transition-all duration-300 border-b-2",
+                      activeTab === 'habits' ? "border-primary text-primary font-black" : "border-transparent text-muted-foreground opacity-30"
+                  )}
+              >
+                  Habits
+              </button>
+              <button 
+                  onClick={() => setActiveTab('xp')}
+                  className={cn(
+                      "px-6 py-4 text-xs uppercase tracking-[0.2em] transition-all duration-300 border-b-2",
+                      activeTab === 'xp' ? "border-primary text-primary font-black" : "border-transparent text-muted-foreground opacity-30"
+                  )}
+              >
+                  XP
+              </button>
+          </div>
       </div>
 
-      <XPProgress days={user.sprintDays} level={user.level} />
+      <div className="pt-6">
+        <XPProgress days={user.sprintDays} level={user.level} />
+      </div>
 
-      <div className="flex-1 px-6 space-y-8">
-        
-        {/* Simplified Tabs */}
-        <div className="flex border-b border-white/5 mb-8">
-            <button 
-                onClick={() => setActiveTab('today')}
-                className={cn(
-                    "px-6 py-4 text-xs uppercase tracking-[0.2em] transition-all duration-300 border-b-2",
-                    activeTab === 'today' ? "border-primary text-primary font-black" : "border-transparent text-muted-foreground opacity-30"
-                )}
-            >
-                Today
-            </button>
-            <button 
-                onClick={() => setActiveTab('habits')}
-                className={cn(
-                    "px-6 py-4 text-xs uppercase tracking-[0.2em] transition-all duration-300 border-b-2",
-                    activeTab === 'habits' ? "border-primary text-primary font-black" : "border-transparent text-muted-foreground opacity-30"
-                )}
-            >
-                Habits
-            </button>
-            <button 
-                onClick={() => setActiveTab('xp')}
-                className={cn(
-                    "px-6 py-4 text-xs uppercase tracking-[0.2em] transition-all duration-300 border-b-2",
-                    activeTab === 'xp' ? "border-primary text-primary font-black" : "border-transparent text-muted-foreground opacity-30"
-                )}
-            >
-                XP
-            </button>
-        </div>
-
+      <div className="flex-1 px-6 space-y-8 mt-6">
         <div className="min-h-[400px]">
           {activeTab === 'today' && (
             <div className="space-y-6">
