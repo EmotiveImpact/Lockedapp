@@ -85,12 +85,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                         isActive && !isQuickActionOpen && "scale-110 drop-shadow-[0_0_8px_rgba(204,255,0,0.5)]"
                     )}
                   />
-                  <span className={cn(
-                      "text-[10px] uppercase font-bold tracking-wider transition-opacity duration-300",
-                      isActive && !isQuickActionOpen ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-                  )}>
-                    {item.label}
-                  </span>
                 </a>
               </Link>
             );

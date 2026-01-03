@@ -8,6 +8,7 @@ import HomePage from "@/pages/home";
 import HabitsPage from "@/pages/habits";
 import SocialPage from "@/pages/social";
 import ProfilePage from "@/pages/profile";
+import ExplorePage from "@/pages/explore";
 import Layout from "@/components/layout";
 import { HabitsProvider } from "@/hooks/use-habits";
 
@@ -19,6 +20,7 @@ function Router() {
         <Route path="/tasks" component={Dashboard} />
         <Route path="/habits" component={HabitsPage} />
         <Route path="/social" component={SocialPage} />
+        <Route path="/explore" component={ExplorePage} />
         <Route path="/profile" component={ProfilePage} />
         <Route component={NotFound} />
       </Switch>
