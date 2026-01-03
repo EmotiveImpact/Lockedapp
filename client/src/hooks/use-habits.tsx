@@ -1,4 +1,4 @@
-import { useState, createContext, useContext, ReactNode, useEffect } from 'react';
+import { useState, createContext, useContext, ReactNode } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
 export type Habit = {
@@ -8,6 +8,8 @@ export type Habit = {
   category: 'health' | 'mindset' | 'fitness' | 'routine';
 };
 
+export type DayStatus = 'pending' | 'completed' | 'failed';
+
 export type User = {
   name: string;
   level: number;
@@ -15,7 +17,7 @@ export type User = {
   nextLevelXp: number;
   streak: number;
   todayCompletions: string[]; // array of habit IDs
-  history: Record<string, string[]>; // date -> array of habit IDs
+  sprintDays: DayStatus[]; // 28 days status
 };
 
 type HabitsContextType = {
@@ -25,6 +27,7 @@ type HabitsContextType = {
   addHabit: (habit: Omit<Habit, 'id'>) => void;
   removeHabit: (habitId: string) => void;
   completeDay: () => void;
+  failDay: () => void;
 };
 
 const HabitsContext = createContext<HabitsContextType | undefined>(undefined);
@@ -47,7 +50,7 @@ const INITIAL_USER: User = {
   nextLevelXp: 500,
   streak: 3,
   todayCompletions: [],
-  history: {},
+  sprintDays: Array(28).fill('pending').map((s, i) => i < 2 ? 'completed' : s), // Start with 2 completed
 };
 
 export function HabitsProvider({ children }: { children: ReactNode }) {
@@ -71,7 +74,6 @@ export function HabitsProvider({ children }: { children: ReactNode }) {
         newXp += habit.xp;
         newCompletions.push(habitId);
         
-        // Check for level up
         if (newXp >= prev.nextLevelXp) {
            toast({
              title: "LEVEL UP!",
@@ -81,7 +83,6 @@ export function HabitsProvider({ children }: { children: ReactNode }) {
         }
       }
       
-      // Simple level calculation for mock
       const level = Math.floor(newXp / 500);
       const nextLevelXp = (level + 1) * 500;
 
@@ -106,15 +107,52 @@ export function HabitsProvider({ children }: { children: ReactNode }) {
   };
 
   const completeDay = () => {
+    setUser(prev => {
+        const nextPendingIndex = prev.sprintDays.findIndex(s => s === 'pending');
+        if (nextPendingIndex === -1) return prev;
+        
+        const newSprintDays = [...prev.sprintDays];
+        newSprintDays[nextPendingIndex] = 'completed';
+        
+        return {
+            ...prev,
+            sprintDays: newSprintDays,
+            todayCompletions: [],
+            streak: prev.streak + 1
+        };
+    });
     toast({
         title: "DAY COMPLETE",
-        description: "Streak maintained. Good work.",
+        description: "Sprint progress recorded.",
         className: "bg-primary text-primary-foreground border-none font-display uppercase tracking-wider"
     });
   };
 
+  const failDay = () => {
+    setUser(prev => {
+        const nextPendingIndex = prev.sprintDays.findIndex(s => s === 'pending');
+        if (nextPendingIndex === -1) return prev;
+        
+        const newSprintDays = [...prev.sprintDays];
+        newSprintDays[nextPendingIndex] = 'failed';
+        
+        return {
+            ...prev,
+            sprintDays: newSprintDays,
+            todayCompletions: [],
+            streak: 0
+        };
+    });
+    toast({
+        title: "FAILED",
+        description: "Sprint day marked as failed. Resetting streak.",
+        variant: "destructive",
+        className: "uppercase font-display tracking-wider"
+    });
+  };
+
   return (
-    <HabitsContext.Provider value={{ habits, user, toggleHabit, addHabit, removeHabit, completeDay }}>
+    <HabitsContext.Provider value={{ habits, user, toggleHabit, addHabit, removeHabit, completeDay, failDay }}>
       {children}
     </HabitsContext.Provider>
   );

@@ -1,21 +1,17 @@
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { DayStatus } from "@/hooks/use-habits";
 
-interface XPProgressProps {
-  current: number;
-  total: number;
+interface SprintProgressProps {
+  days: DayStatus[];
   level: number;
 }
 
-export function XPProgress({ current, total, level }: XPProgressProps) {
-  const percentage = Math.min(100, (current / total) * 100);
-  const dots = 12; // Number of dots in the circular/linear representation
-
+export function XPProgress({ days, level }: SprintProgressProps) {
   return (
     <div className="flex flex-col items-center justify-center py-8">
-      <div className="relative w-full max-w-[300px] flex flex-col items-center gap-4">
+      <div className="relative w-full max-w-[320px] flex flex-col items-center gap-4">
         
-        {/* Level Indicator */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -27,30 +23,23 @@ export function XPProgress({ current, total, level }: XPProgressProps) {
           </p>
         </motion.div>
 
-        {/* Progress Bar / Dots */}
-        <div className="w-full flex justify-between gap-1 mt-4 px-4">
-            {Array.from({ length: 20 }).map((_, i) => {
-                const isActive = (i / 20) * 100 < percentage;
-                return (
-                    <motion.div
-                        key={i}
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        transition={{ delay: i * 0.02 }}
-                        className={cn(
-                            "h-2 w-2 rounded-full transition-colors duration-500",
-                            isActive ? "bg-primary shadow-[0_0_8px_var(--color-primary)]" : "bg-white/10"
-                        )}
-                    />
-                )
-            })}
+        {/* 28 Day Sprint Grid (14x2 for compact look) */}
+        <div className="w-full grid grid-cols-14 gap-1.5 mt-4 px-2">
+            {days.map((status, i) => (
+                <motion.div
+                    key={i}
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: i * 0.01 }}
+                    className={cn(
+                        "h-2.5 w-2.5 rounded-full transition-all duration-500",
+                        status === 'completed' && "bg-primary shadow-[0_0_8px_var(--color-primary)]",
+                        status === 'failed' && "bg-destructive shadow-[0_0_8px_var(--color-destructive)]",
+                        status === 'pending' && "bg-white/10"
+                    )}
+                />
+            ))}
         </div>
-        
-        <div className="flex justify-between w-full px-4 text-xs text-muted-foreground font-mono mt-1">
-            <span>{current} XP</span>
-            <span>{total} XP</span>
-        </div>
-
       </div>
     </div>
   );

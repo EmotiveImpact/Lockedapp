@@ -2,13 +2,12 @@ import { useHabits } from "@/hooks/use-habits";
 import { XPProgress } from "@/components/xp-progress";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { Check, X } from "lucide-react";
+import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function Dashboard() {
-  const { habits, user, toggleHabit, completeDay } = useHabits();
+  const { habits, user, toggleHabit, completeDay, failDay } = useHabits();
 
-  // Sort: Incomplete first, then completed
   const sortedHabits = [...habits].sort((a, b) => {
     const aCompleted = user.todayCompletions.includes(a.id);
     const bCompleted = user.todayCompletions.includes(b.id);
@@ -16,15 +15,12 @@ export default function Dashboard() {
     return aCompleted ? 1 : -1;
   });
 
-  const progress = (user.todayCompletions.length / habits.length) * 100;
-
   return (
     <div className="flex flex-col min-h-full">
-      <XPProgress current={user.currentXp} total={user.nextLevelXp} level={user.level} />
+      <XPProgress days={user.sprintDays} level={user.level} />
 
       <div className="flex-1 px-4 pb-8 space-y-6">
         
-        {/* Tabs Visual (Static for now as we use bottom nav for main switches) */}
         <div className="flex border-b border-white/10 mb-6">
             <div className="px-4 py-2 border-b-2 border-primary text-foreground font-bold text-sm uppercase tracking-wider">Today</div>
             <div className="px-4 py-2 text-muted-foreground font-medium text-sm uppercase tracking-wider opacity-50">Habits</div>
@@ -71,16 +67,6 @@ export default function Dashboard() {
                         {isCompleted && <Check className="h-4 w-4 text-black" strokeWidth={3} />}
                     </div>
                   </div>
-                  
-                  {/* Progress fill background */}
-                  {isCompleted && (
-                      <motion.div 
-                        layoutId={`fill-${habit.id}`}
-                        className="absolute inset-0 bg-primary/5 z-0" 
-                        initial={{ x: "-100%" }}
-                        animate={{ x: "0%" }}
-                      />
-                  )}
                 </motion.div>
               );
             })}
@@ -97,7 +83,8 @@ export default function Dashboard() {
             
             <Button 
                 variant="ghost"
-                className="w-full text-muted-foreground hover:text-white hover:bg-white/5 font-medium h-12 rounded-xl"
+                className="w-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 font-medium h-12 rounded-xl border border-transparent hover:border-destructive/20 transition-all"
+                onClick={failDay}
             >
                 I Failed
             </Button>
