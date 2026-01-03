@@ -18,23 +18,29 @@ export default function HomePage() {
   return (
     <div className="flex flex-col min-h-full">
       {/* Unified Header */}
-      <header className="p-6 pt-12 border-b border-white/5 bg-black/50 backdrop-blur-md sticky top-0 z-40">
+      <header className="p-8 pt-12 border-b border-white/5 bg-black/80 backdrop-blur-md sticky top-0 z-40">
         <div className="flex items-center justify-between">
-            <h1 className="text-4xl font-display font-bold tracking-tighter italic">LOCKED IN</h1>
+            <h1 className="text-5xl font-display font-black tracking-tighter italic leading-none">LOCKED IN</h1>
             <div className="flex gap-2">
                 <Link href="/profile">
-                    <Button size="icon" variant="ghost" className="rounded-full bg-white/5 h-10 w-10">
+                    <Button size="icon" variant="ghost" className="rounded-full bg-white/5 h-10 w-10 border border-white/10">
                         <Settings size={20} className="text-primary" />
                     </Button>
                 </Link>
-                <Button size="icon" variant="ghost" className="rounded-full bg-white/5 h-10 w-10">
+                <Button size="icon" variant="ghost" className="rounded-full bg-white/5 h-10 w-10 border border-white/10">
                     <Bell size={20} className="text-primary" />
                 </Button>
             </div>
         </div>
-        <div className="mt-4">
-            <h2 className="text-2xl font-bold leading-none">Hey, The</h2>
-            <p className="text-muted-foreground text-[10px] uppercase font-bold tracking-widest mt-1">Saturday, March 1</p>
+        <div className="mt-6 flex items-center justify-between">
+            <div>
+                <h2 className="text-2xl font-black leading-none uppercase tracking-tight">Hey, The</h2>
+                <p className="text-primary text-[10px] uppercase font-black tracking-[0.3em] mt-2">March 01 // 2026</p>
+            </div>
+            <div className="bg-white/5 border border-white/10 px-4 py-2 rounded-xl">
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground block">Streak</span>
+                <span className="text-xl font-display font-black text-white">3 DAYS</span>
+            </div>
         </div>
       </header>
 
