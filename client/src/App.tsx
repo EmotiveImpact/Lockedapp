@@ -4,6 +4,7 @@ import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
 import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/dashboard";
+import HomePage from "@/pages/home";
 import HabitsPage from "@/pages/habits";
 import SocialPage from "@/pages/social";
 import ProfilePage from "@/pages/profile";
@@ -14,7 +15,8 @@ function Router() {
   return (
     <Layout>
       <Switch>
-        <Route path="/" component={Dashboard} />
+        <Route path="/" component={HomePage} />
+        <Route path="/tasks" component={Dashboard} />
         <Route path="/habits" component={HabitsPage} />
         <Route path="/social" component={SocialPage} />
         <Route path="/profile" component={ProfilePage} />
