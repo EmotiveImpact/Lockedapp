@@ -57,9 +57,9 @@ export default function Dashboard() {
           </div>
           
           <div className="mt-16 mb-4 flex flex-col items-center w-full px-4">
-            {/* 28 Dots directly under LockedIn 1 */}
+            <p className="text-muted-foreground text-[10px] uppercase tracking-[0.4em] font-black mb-4">SYSTEM STATUS: <span className="text-primary">LVL {user.level} ACTIVE</span></p>
+            {/* 28 Dots directly under Status */}
             <XPProgress days={user.sprintDays} level={user.level} />
-            <p className="text-muted-foreground text-[10px] uppercase tracking-[0.4em] font-black mt-4">SYSTEM STATUS: <span className="text-primary">LVL {user.level} ACTIVE</span></p>
           </div>
 
           {/* Simplified Tabs Centered */}
