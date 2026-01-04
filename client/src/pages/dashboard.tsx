@@ -45,15 +45,8 @@ export default function Dashboard() {
     <div className="flex flex-col min-h-full pb-32">
       {/* Protocol Header - LockedIn 1 (Sticky) */}
       <div className="p-8 pb-0 bg-black/80 backdrop-blur-md sticky top-0 z-40 border-b border-white/5 flex flex-col items-center">
-          <div className="w-full flex items-center justify-between absolute top-8 px-6 left-0">
-            <div className="w-8" /> {/* Spacer */}
-            <h1 className="text-4xl sm:text-5xl font-display font-black tracking-tighter italic leading-none absolute left-1/2 -translate-x-1/2 uppercase whitespace-nowrap">LOCKED IN</h1>
-            <button 
-              onClick={() => setQuickActionOpen(false)}
-              className="h-10 w-10 bg-white/5 rounded-full flex items-center justify-center text-white border border-white/10 hover:bg-white/10 transition-colors shrink-0"
-            >
-              <X size={20} />
-            </button>
+          <div className="w-full flex items-center justify-center absolute top-8 px-6 left-0">
+            <h1 className="text-4xl sm:text-5xl font-display font-black tracking-tighter italic leading-none uppercase whitespace-nowrap">LOCKED IN</h1>
           </div>
           
           <div className="mt-16 mb-4 flex flex-col items-center w-full px-4">

@@ -40,9 +40,9 @@ const ARTICLES = [
 export default function ExplorePage() {
   return (
     <div className="flex flex-col min-h-full pb-20">
-      <header className="p-6 pt-12 border-b border-white/5 bg-black/50 backdrop-blur-md sticky top-0 z-40">
-        <h1 className="text-4xl font-display font-bold tracking-tighter italic underline decoration-primary decoration-4 underline-offset-8">EXPLORE</h1>
-        <p className="text-muted-foreground text-xs uppercase tracking-[0.2em] font-medium mt-1">Upgrade your knowledge</p>
+      <header className="p-8 pt-12 border-b border-white/5 bg-black/80 backdrop-blur-md sticky top-0 z-40 flex flex-col items-center">
+        <h1 className="text-5xl font-display font-black tracking-tighter italic leading-none uppercase">EXPLORE</h1>
+        <p className="text-muted-foreground text-[10px] uppercase tracking-[0.4em] font-black mt-4">UPGRADE YOUR KNOWLEDGE</p>
       </header>
 
       <div className="p-6 space-y-10">

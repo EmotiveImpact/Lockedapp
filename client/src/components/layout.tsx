@@ -47,10 +47,30 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             onClick={() => setQuickActionOpen(!isQuickActionOpen)}
             className={cn(
               "h-14 w-14 bg-black border-2 border-white/10 rounded-full flex items-center justify-center transition-all duration-300 shadow-2xl hover:scale-110 active:scale-95",
-              isQuickActionOpen ? "text-destructive rotate-45" : "text-primary"
+              isQuickActionOpen ? "text-destructive border-destructive" : "text-primary border-primary"
             )}
           >
-              <Plus size={32} />
+              <AnimatePresence mode="wait">
+                {isQuickActionOpen ? (
+                  <motion.div
+                    key="close"
+                    initial={{ rotate: -90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: 90, opacity: 0 }}
+                  >
+                    <X size={32} />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="plus"
+                    initial={{ rotate: 90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: -90, opacity: 0 }}
+                  >
+                    <Plus size={32} />
+                  </motion.div>
+                )}
+              </AnimatePresence>
           </button>
       </div>
 
