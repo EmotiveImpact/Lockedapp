@@ -1,5 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import { useHabits } from "@/hooks/use-habits";
 
 const LEADERBOARD = [
   { id: 1, name: "David G.", xp: 12450, level: 24, avatar: "DG", isUser: false },
@@ -10,14 +11,17 @@ const LEADERBOARD = [
 ];
 
 export default function SocialPage() {
-  return (
-    <div className="p-6 pt-12 min-h-full">
-      <div className="text-center mb-10">
-        <h1 className="text-3xl font-display font-bold uppercase tracking-wider mb-2">The Circle</h1>
-        <p className="text-muted-foreground text-sm">Competitors in your orbit</p>
-      </div>
+  const { user: currentUser } = useHabits();
 
-      <div className="space-y-4">
+  return (
+    <div className="flex flex-col min-h-full pb-32">
+      {/* Unified Header */}
+      <header className="p-8 pt-12 border-b border-white/5 bg-black/80 backdrop-blur-md sticky top-0 z-40 flex flex-col items-center">
+        <h1 className="text-5xl font-display font-black tracking-tighter italic leading-none uppercase">THE CIRCLE</h1>
+        <p className="text-muted-foreground text-[10px] uppercase tracking-[0.4em] font-black mt-4">COMPETITORS IN ORBIT</p>
+      </header>
+
+      <div className="p-6 space-y-4">
         {LEADERBOARD.map((user, index) => (
           <div 
             key={user.id}
