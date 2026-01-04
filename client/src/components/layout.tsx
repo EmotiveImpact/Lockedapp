@@ -9,7 +9,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const { isQuickActionOpen, setQuickActionOpen } = useHabits();
 
-  // Quick Action (task screen) uses a “card reveal” transition from the center + button.
+  // Quick Action (task screen) uses a “sheet” transition (slides up slightly + fades).
   // The bottom nav remains visible above the overlay.
 
   const navItems = [
