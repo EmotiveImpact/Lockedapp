@@ -83,6 +83,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             return (
               <Link key={item.href} href={item.href}>
                 <a 
+                  data-testid={`bottom-mobile-nav-link-${item.label.toLowerCase()}`}
                   onClick={() => setQuickActionOpen(false)}
                   className={cn(
                     "flex flex-col items-center justify-center gap-1 w-16 h-14 transition-all duration-300 group",
