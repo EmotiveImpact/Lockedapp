@@ -34,7 +34,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: "100%" }}
             transition={{ type: "spring", damping: 30, stiffness: 200 }}
-            className="fixed inset-0 z-[100] bg-background max-w-md mx-auto overflow-y-auto no-scrollbar"
+            className="fixed inset-0 z-40 bg-background max-w-md mx-auto overflow-y-auto no-scrollbar"
           >
             <Dashboard />
           </motion.div>
