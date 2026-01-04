@@ -15,10 +15,15 @@ export default function SocialPage() {
 
   return (
     <div className="flex flex-col min-h-full pb-32">
-      {/* Unified Header */}
-      <header className="p-8 pt-12 border-b border-white/5 bg-gradient-to-b from-black/80 via-black/40 to-black/0 backdrop-blur-md sticky top-0 z-40 flex flex-col items-center">
-        <h1 className="text-5xl font-display font-black tracking-tighter italic leading-none uppercase">THE CIRCLE</h1>
-        <p className="text-muted-foreground text-[10px] uppercase tracking-[0.4em] font-black mt-4">COMPETITORS IN ORBIT</p>
+      {/* Unified Header (aligned with Task screen header positioning) */}
+      <header className="p-8 pb-0 border-b border-white/5 bg-gradient-to-b from-black/80 via-black/40 to-black/0 backdrop-blur-md sticky top-0 z-40 flex flex-col items-center relative">
+        <div className="w-full flex items-center justify-center absolute top-8 px-6 left-0">
+          <h1 className="text-5xl font-display font-black tracking-tighter italic leading-none uppercase whitespace-nowrap">THE CIRCLE</h1>
+        </div>
+
+        <div className="mt-16 mb-4 flex flex-col items-center w-full px-4">
+          <p className="text-muted-foreground text-[10px] uppercase tracking-[0.4em] font-black">COMPETITORS IN ORBIT</p>
+        </div>
       </header>
 
       <div className="p-6 space-y-4">
