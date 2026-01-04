@@ -9,6 +9,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const { isQuickActionOpen, setQuickActionOpen } = useHabits();
 
+  // When opening the quick action, we fade between “page states” (no slide).
+  // The bottom nav remains visible above the overlay.
+
   const navItems = [
     { href: "/", icon: Home, label: "Home" },
     { href: "/social", icon: Users, label: "Community" },
@@ -30,10 +33,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <AnimatePresence>
         {isQuickActionOpen && (
           <motion.div 
-            initial={{ opacity: 0, y: "100%" }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: "100%" }}
-            transition={{ type: "spring", damping: 30, stiffness: 200 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.22, ease: "easeOut" }}
             data-testid="quick-action-overlay"
             className="fixed inset-0 z-[150] bg-background max-w-md mx-auto overflow-y-auto no-scrollbar"
           >

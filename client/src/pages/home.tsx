@@ -3,6 +3,7 @@ import { Settings, Bell, BarChart2, CheckSquare, Flame, User, MessageSquare, Hea
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { useHabits } from "@/hooks/use-habits";
+import { XPProgress } from "@/components/xp-progress";
 import { cn } from "@/lib/utils";
 
 export default function HomePage() {
@@ -14,6 +15,9 @@ export default function HomePage() {
       <header className="p-8 pt-12 border-b border-white/5 bg-gradient-to-b from-black/80 via-black/40 to-black/0 backdrop-blur-md sticky top-0 z-40 flex flex-col items-center">
         <h1 className="text-5xl font-display font-black tracking-tighter italic leading-none uppercase">LOCKED IN</h1>
         <p className="text-muted-foreground text-[10px] uppercase tracking-[0.4em] font-black mt-4">SYSTEM STATUS: <span className="text-primary">LVL {user.level} ACTIVE</span></p>
+        <div className="mt-4" data-testid="home-sprint-dots">
+          <XPProgress days={user.sprintDays} level={user.level} />
+        </div>
       </header>
 
       <div className="p-6 space-y-8 mt-4 pb-24">
