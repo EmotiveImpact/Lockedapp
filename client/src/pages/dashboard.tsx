@@ -43,7 +43,7 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col min-h-full pb-32">
-      {/* Protocol Header - The "Look" */}
+      {/* Protocol Header - LockedIn 1 (Sticky) */}
       <div className="p-8 pb-0 bg-black/80 backdrop-blur-md sticky top-0 z-40 border-b border-white/5 flex flex-col items-center">
           <div className="w-full flex items-center justify-between absolute top-8 px-8 left-0">
             <div className="w-10" /> {/* Spacer */}
@@ -56,8 +56,10 @@ export default function Dashboard() {
             </button>
           </div>
           
-          <div className="mt-16 mb-6 flex flex-col items-center w-full px-4">
+          <div className="mt-16 mb-4 flex flex-col items-center w-full px-4">
+            {/* 28 Dots directly under LockedIn 1 */}
             <XPProgress days={user.sprintDays} level={user.level} />
+            <p className="text-muted-foreground text-[10px] uppercase tracking-[0.4em] font-black mt-4">SYSTEM STATUS: <span className="text-primary">LVL {user.level} ACTIVE</span></p>
           </div>
 
           {/* Simplified Tabs Centered */}
