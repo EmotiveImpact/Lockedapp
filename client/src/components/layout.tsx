@@ -76,7 +76,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </button>
       </div>
 
-      <nav className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pointer-events-none">
+      <nav data-testid="bottom-mobile-nav" className="fixed bottom-0 left-0 right-0 z-[210] flex justify-center pointer-events-none">
         <div className="w-full max-w-md bg-card/80 backdrop-blur-xl border-t border-white/5 pb-6 pt-2 px-6 flex justify-between items-center pointer-events-auto">
           {navItems.map((item, idx) => {
             const isActive = location === item.href;
