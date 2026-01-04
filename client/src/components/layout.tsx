@@ -42,7 +42,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       </AnimatePresence>
 
       {/* Center Plus Button */}
-      <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[110]">
+      <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[60]">
           <button 
             onClick={() => setQuickActionOpen(!isQuickActionOpen)}
             className={cn(
