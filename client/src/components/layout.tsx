@@ -37,7 +37,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             data-testid="quick-action-overlay"
             className="fixed inset-0 z-[150] bg-background max-w-md mx-auto overflow-y-auto no-scrollbar"
           >
-            <Dashboard />
+            <div className="pb-28">
+              <Dashboard />
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
