@@ -49,6 +49,17 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             />
 
+            {/* Lightning / energy flash (adds punch on open) */}
+            <motion.div
+              key="quick-action-lightning"
+              initial={{ opacity: 0, scale: 0.75 }}
+              animate={{ opacity: [0, 0.9, 0], scale: [0.75, 1.25, 1.55] }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.55, times: [0, 0.25, 1], ease: "easeOut" }}
+              data-testid="quick-action-lightning"
+              className="pointer-events-none absolute left-1/2 bottom-[92px] -translate-x-1/2 w-[560px] h-[560px] mix-blend-screen bg-[radial-gradient(circle_at_center,rgba(204,255,0,0.40),rgba(204,255,0,0.10)_25%,transparent_60%)]"
+            />
+
             {/* Sheet content */}
             <motion.div
               initial={{ opacity: 0, y: 18, scale: 0.99, borderRadius: 28 }}

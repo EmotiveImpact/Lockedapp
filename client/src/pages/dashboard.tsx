@@ -27,12 +27,42 @@ export default function Dashboard() {
   const [newHabit, setNewHabit] = useState({ title: '', xp: 50, category: 'routine' as const });
   const [isAddOpen, setIsAddOpen] = useState(false);
 
+  // UI feedback (haptics + micro-vibration animation) when selecting tasks
+  const [jiggleHabitId, setJiggleHabitId] = useState<string | null>(null);
+  const [flashHabitId, setFlashHabitId] = useState<string | null>(null);
+
   const sortedHabits = [...habits].sort((a, b) => {
     const aCompleted = user.todayCompletions.includes(a.id);
     const bCompleted = user.todayCompletions.includes(b.id);
     if (aCompleted === bCompleted) return 0;
     return aCompleted ? 1 : -1;
   });
+
+  const triggerHaptic = () => {
+    try {
+      // Mobile haptics (supported on many devices)
+      if ("vibrate" in navigator) {
+        // short, snappy vibration
+        // @ts-ignore
+        navigator.vibrate(18);
+      }
+    } catch {
+      // ignore
+    }
+  };
+
+  const handleHabitPress = (habitId: string) => {
+    triggerHaptic();
+
+    setJiggleHabitId(habitId);
+    setFlashHabitId(habitId);
+
+    // Clear effects after animation
+    window.setTimeout(() => setJiggleHabitId((prev) => (prev === habitId ? null : prev)), 260);
+    window.setTimeout(() => setFlashHabitId((prev) => (prev === habitId ? null : prev)), 520);
+
+    toggleHabit(habitId);
+  };
 
   const handleAddHabit = () => {
     if (!newHabit.title) return;
@@ -101,9 +131,20 @@ export default function Dashboard() {
                         key={habit.id}
                         layout
                         initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.05 }}
-                        onClick={() => toggleHabit(habit.id)}
+                        animate={{
+                          opacity: 1,
+                          y: 0,
+                          x:
+                            jiggleHabitId === habit.id
+                              ? [0, -4, 4, -3, 3, 0]
+                              : 0,
+                        }}
+                        transition={{
+                          delay: index * 0.05,
+                          x: { duration: 0.22, ease: "easeOut" },
+                        }}
+                        onClick={() => handleHabitPress(habit.id)}
+                        data-testid={`task-item-${habit.id}`}
                         className={cn(
                             "group relative overflow-hidden rounded-[20px] bg-card border p-6 cursor-pointer transition-all duration-300",
                             isCompleted 
@@ -111,6 +152,18 @@ export default function Dashboard() {
                                 : "border-white/5 hover:border-white/10"
                         )}
                         >
+                        <AnimatePresence>
+                          {flashHabitId === habit.id && (
+                            <motion.div
+                              key="flash"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: [0, 0.55, 0] }}
+                              exit={{ opacity: 0 }}
+                              transition={{ duration: 0.5, ease: "easeOut" }}
+                              className="absolute inset-0 bg-primary/15"
+                            />
+                          )}
+                        </AnimatePresence>
                         <div className="flex items-center justify-between relative z-10">
                             <div>
                                 <h3 className={cn(
