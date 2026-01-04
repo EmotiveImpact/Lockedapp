@@ -56,7 +56,7 @@ export default function Dashboard() {
             </button>
           </div>
           
-          <div className="mt-20 mb-4 flex flex-col items-center w-full px-4">
+          <div className="mt-16 mb-6 flex flex-col items-center w-full px-4">
             <XPProgress days={user.sprintDays} level={user.level} />
           </div>
 
