@@ -32,16 +32,31 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       {/* Quick Action Overlay (Dashboard) */}
       <AnimatePresence>
         {isQuickActionOpen && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.22, ease: "easeOut" }}
-            data-testid="quick-action-overlay"
-            className="fixed inset-0 z-[150] bg-background max-w-md mx-auto overflow-y-auto no-scrollbar"
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className="fixed inset-0 z-[150] max-w-md mx-auto"
           >
-            <div className="pb-28">
-              <Dashboard />
+            {/* Stronger crossfade/backdrop over the underlying page */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              data-testid="quick-action-backdrop"
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+
+            {/* Task screen content */}
+            <div
+              data-testid="quick-action-overlay"
+              className="relative h-full bg-background overflow-y-auto no-scrollbar"
+            >
+              <div className="pb-28">
+                <Dashboard />
+              </div>
             </div>
           </motion.div>
         )}
