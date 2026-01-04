@@ -17,6 +17,12 @@ export default function HomePage() {
       </header>
 
       <div className="p-6 space-y-8 mt-4 pb-24">
+        {/* Welcome Message */}
+        <div className="px-2">
+          <h2 className="text-3xl font-display font-black tracking-tight uppercase italic">Welcome back, Soldier</h2>
+          <p className="text-primary text-[10px] font-black uppercase tracking-[0.3em] mt-2 italic opacity-70">Ready to execute protocol?</p>
+        </div>
+
         {/* Hero Challenge Card - MOVED TO TOP */}
         <div className="relative rounded-[40px] overflow-hidden aspect-[4/5] group cursor-pointer shadow-2xl border border-white/10">
             <img 
