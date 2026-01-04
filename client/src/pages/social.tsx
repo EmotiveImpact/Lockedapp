@@ -16,7 +16,7 @@ export default function SocialPage() {
   return (
     <div className="flex flex-col min-h-full pb-32">
       {/* Unified Header */}
-      <header className="p-8 pt-12 border-b border-white/5 bg-black/80 backdrop-blur-md sticky top-0 z-40 flex flex-col items-center">
+      <header className="p-8 pt-12 border-b border-white/5 bg-gradient-to-b from-black/80 via-black/40 to-black/0 backdrop-blur-md sticky top-0 z-40 flex flex-col items-center">
         <h1 className="text-5xl font-display font-black tracking-tighter italic leading-none uppercase">THE CIRCLE</h1>
         <p className="text-muted-foreground text-[10px] uppercase tracking-[0.4em] font-black mt-4">COMPETITORS IN ORBIT</p>
       </header>

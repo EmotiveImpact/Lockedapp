@@ -44,7 +44,7 @@ export default function Dashboard() {
   return (
     <div className="flex flex-col min-h-full pb-32">
       {/* Protocol Header - LockedIn 1 (Sticky) */}
-      <div className="p-8 pb-0 bg-black/80 backdrop-blur-md sticky top-0 z-40 border-b border-white/5 flex flex-col items-center">
+      <div className="p-8 pb-0 bg-gradient-to-b from-black/80 via-black/40 to-black/0 backdrop-blur-md sticky top-0 z-40 border-b border-white/5 flex flex-col items-center">
           <div className="w-full flex items-center justify-center absolute top-8 px-6 left-0">
             <h1 className="text-5xl font-display font-black tracking-tighter italic leading-none uppercase whitespace-nowrap">LOCKED IN</h1>
           </div>
