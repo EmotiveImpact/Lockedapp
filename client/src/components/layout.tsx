@@ -29,14 +29,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         {children}
       </main>
 
-      {/* Quick Action Overlay (Dashboard) — Card reveal */}
+      {/* Quick Action Overlay (Dashboard) — Sheet transition */}
       <AnimatePresence>
         {isQuickActionOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.35, ease: "easeOut" }}
+            transition={{ duration: 0.28, ease: "easeOut" }}
             className="fixed inset-0 z-[150] max-w-md mx-auto"
           >
             {/* Backdrop */}
@@ -44,38 +44,20 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.35, ease: "easeOut" }}
+              transition={{ duration: 0.28, ease: "easeOut" }}
               data-testid="quick-action-backdrop"
               className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             />
 
-            {/* Revealed card */}
+            {/* Sheet content */}
             <motion.div
-              initial={{
-                opacity: 0,
-                scale: 0.25,
-                x: "-50%",
-                y: "calc(100% - 104px)",
-                borderRadius: "9999px",
-              }}
-              animate={{
-                opacity: 1,
-                scale: 1,
-                x: "-50%",
-                y: 0,
-                borderRadius: "0px",
-              }}
-              exit={{
-                opacity: 0,
-                scale: 0.25,
-                x: "-50%",
-                y: "calc(100% - 104px)",
-                borderRadius: "9999px",
-              }}
-              transition={{ type: "spring", damping: 26, stiffness: 260 }}
-              style={{ left: "50%", top: 0 }}
+              initial={{ opacity: 0, y: 18, scale: 0.99, borderRadius: 28 }}
+              animate={{ opacity: 1, y: 0, scale: 1, borderRadius: 28 }}
+              exit={{ opacity: 0, y: 18, scale: 0.99, borderRadius: 28 }}
+              transition={{ type: "spring", damping: 28, stiffness: 260 }}
+              style={{ left: 0, right: 0, top: 0, bottom: 0 }}
               data-testid="quick-action-overlay"
-              className="absolute h-full w-full bg-background overflow-hidden shadow-2xl"
+              className="absolute bg-background overflow-hidden shadow-2xl border border-white/10"
             >
               <div className="h-full overflow-y-auto no-scrollbar pb-28">
                 <Dashboard />
