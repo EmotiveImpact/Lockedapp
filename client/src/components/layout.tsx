@@ -29,35 +29,58 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         {children}
       </main>
 
-      {/* Quick Action Overlay (Dashboard) */}
+      {/* Quick Action Overlay (Dashboard) — Card reveal */}
       <AnimatePresence>
         {isQuickActionOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
+            transition={{ duration: 0.35, ease: "easeOut" }}
             className="fixed inset-0 z-[150] max-w-md mx-auto"
           >
-            {/* Stronger crossfade/backdrop over the underlying page */}
+            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
+              transition={{ duration: 0.35, ease: "easeOut" }}
               data-testid="quick-action-backdrop"
               className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             />
 
-            {/* Task screen content */}
-            <div
+            {/* Revealed card */}
+            <motion.div
+              initial={{
+                opacity: 0,
+                scale: 0.25,
+                x: "-50%",
+                y: "calc(100% - 104px)",
+                borderRadius: "9999px",
+              }}
+              animate={{
+                opacity: 1,
+                scale: 1,
+                x: "-50%",
+                y: 0,
+                borderRadius: "0px",
+              }}
+              exit={{
+                opacity: 0,
+                scale: 0.25,
+                x: "-50%",
+                y: "calc(100% - 104px)",
+                borderRadius: "9999px",
+              }}
+              transition={{ type: "spring", damping: 26, stiffness: 260 }}
+              style={{ left: "50%", top: 0 }}
               data-testid="quick-action-overlay"
-              className="relative h-full bg-background overflow-y-auto no-scrollbar"
+              className="absolute h-full w-full bg-background overflow-hidden shadow-2xl"
             >
-              <div className="pb-28">
+              <div className="h-full overflow-y-auto no-scrollbar pb-28">
                 <Dashboard />
               </div>
-            </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
