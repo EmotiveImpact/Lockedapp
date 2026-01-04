@@ -43,8 +43,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       </AnimatePresence>
 
       {/* Center Plus Button */}
-      <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[110]">
+      <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[220]">
           <button 
+            data-testid="bottom-nav-center-action-button"
             onClick={() => setQuickActionOpen(!isQuickActionOpen)}
             className={cn(
               "h-14 w-14 bg-black border-2 border-white/10 rounded-full flex items-center justify-center transition-all duration-300 shadow-2xl hover:scale-110 active:scale-95",
