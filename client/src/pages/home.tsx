@@ -17,7 +17,31 @@ export default function HomePage() {
       </header>
 
       <div className="p-6 space-y-8 mt-4 pb-24">
-        {/* Dice-style Stats Grid */}
+        {/* Hero Challenge Card - MOVED TO TOP */}
+        <div className="relative rounded-[40px] overflow-hidden aspect-[4/5] group cursor-pointer shadow-2xl border border-white/10">
+            <img 
+                src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1000&auto=format&fit=crop" 
+                alt="Workout"
+                className="absolute inset-0 w-full h-full object-cover grayscale brightness-[0.3] group-hover:scale-105 transition-transform duration-700"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
+            
+            <div className="absolute top-8 left-8">
+                <span className="bg-primary text-black text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-[0_0_15px_rgba(204,255,0,0.5)]">LIVE CHALLENGE</span>
+            </div>
+
+            <div className="absolute bottom-10 left-10 right-10">
+                <p className="text-primary text-[10px] font-black uppercase tracking-[0.3em] mb-2 italic">Active Event</p>
+                <h3 className="text-5xl font-display font-black leading-tight mb-4 uppercase italic tracking-tighter">30-DAY<br/>MONK MODE</h3>
+                <p className="text-white/40 text-xs mb-8 font-black uppercase tracking-widest">Starts in 48 hours · 1.2k Joining</p>
+                
+                <Button className="w-full bg-white text-black font-black uppercase tracking-widest rounded-2xl h-16 text-sm hover:bg-primary transition-colors">
+                    Join Protocol
+                </Button>
+            </div>
+        </div>
+
+        {/* Dice-style Stats Grid - MOVED BELOW HERO */}
         <div className="grid grid-cols-2 gap-4">
           <div className="bg-white/5 border border-white/10 rounded-[40px] p-8 flex flex-col items-center justify-center aspect-square shadow-2xl relative overflow-hidden group hover:bg-white/10 transition-all">
             <div className="absolute inset-0 bg-primary/5 blur-[40px] rounded-full translate-y-1/2 group-hover:bg-primary/10" />
@@ -45,30 +69,6 @@ export default function HomePage() {
             <Zap size={32} fill="currentColor" />
           </div>
         </button>
-
-        {/* Hero Challenge Card - Restored & Elevated */}
-        <div className="relative rounded-[40px] overflow-hidden aspect-[4/5] group cursor-pointer shadow-2xl border border-white/10">
-            <img 
-                src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1000&auto=format&fit=crop" 
-                alt="Workout"
-                className="absolute inset-0 w-full h-full object-cover grayscale brightness-[0.3] group-hover:scale-105 transition-transform duration-700"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent" />
-            
-            <div className="absolute top-8 left-8">
-                <span className="bg-primary text-black text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-[0_0_15px_rgba(204,255,0,0.5)]">LIVE CHALLENGE</span>
-            </div>
-
-            <div className="absolute bottom-10 left-10 right-10">
-                <p className="text-primary text-[10px] font-black uppercase tracking-[0.3em] mb-2 italic">Active Event</p>
-                <h3 className="text-5xl font-display font-black leading-tight mb-4 uppercase italic tracking-tighter">30-DAY<br/>MONK MODE</h3>
-                <p className="text-white/40 text-xs mb-8 font-black uppercase tracking-widest">Starts in 48 hours · 1.2k Joining</p>
-                
-                <Button className="w-full bg-white text-black font-black uppercase tracking-widest rounded-2xl h-16 text-sm hover:bg-primary transition-colors">
-                    Join Protocol
-                </Button>
-            </div>
-        </div>
 
         {/* Motivation Quote Card - Restored & Elevated */}
         <div className="bg-white/5 border border-white/10 rounded-[40px] p-12 relative overflow-hidden group shadow-xl">
