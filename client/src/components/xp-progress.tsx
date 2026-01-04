@@ -9,22 +9,10 @@ interface SprintProgressProps {
 
 export function XPProgress({ days, level }: SprintProgressProps) {
   return (
-    <div className="flex flex-col items-center justify-center py-8">
-      <div className="relative w-full max-w-[320px] flex flex-col items-center gap-4">
-        
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center"
-        >
-          <h1 className="text-4xl font-display font-bold tracking-[0.2em] mb-2">LOCKED IN</h1>
-          <p className="text-muted-foreground text-sm font-medium tracking-wide">
-            YOU ARE AT <span className="text-primary font-bold">LVL {level}</span>
-          </p>
-        </motion.div>
-
+    <div className="flex flex-col items-center justify-center">
+      <div className="relative w-full max-w-[320px] flex flex-col items-center">
         {/* 28 Day Sprint Grid (14x2 for compact look) */}
-        <div className="w-full grid grid-cols-14 gap-1.5 mt-4 px-2">
+        <div className="w-full grid grid-cols-14 gap-1.5 px-2">
             {days.map((status, i) => (
                 <motion.div
                     key={i}

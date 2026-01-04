@@ -47,7 +47,7 @@ export default function Dashboard() {
       <div className="p-8 pb-0 bg-black/80 backdrop-blur-md sticky top-0 z-40 border-b border-white/5 flex flex-col items-center">
           <div className="w-full flex items-center justify-between absolute top-8 px-8 left-0">
             <div className="w-10" /> {/* Spacer */}
-            <h1 className="text-5xl font-display font-black tracking-tighter italic leading-none absolute left-1/2 -translate-x-1/2">LOCKED IN</h1>
+            <h1 className="text-5xl font-display font-black tracking-tighter italic leading-none absolute left-1/2 -translate-x-1/2 uppercase">LOCKED IN</h1>
             <button 
               onClick={() => setQuickActionOpen(false)}
               className="h-10 w-10 bg-white/5 rounded-full flex items-center justify-center text-white border border-white/10 hover:bg-white/10 transition-colors"
@@ -56,8 +56,8 @@ export default function Dashboard() {
             </button>
           </div>
           
-          <div className="mt-20 mb-4 flex flex-col items-center">
-            <p className="text-muted-foreground text-[10px] uppercase tracking-[0.4em] font-black">SYSTEM STATUS: <span className="text-primary">LVL {user.level} ACTIVE</span></p>
+          <div className="mt-20 mb-4 flex flex-col items-center w-full px-4">
+            <XPProgress days={user.sprintDays} level={user.level} />
           </div>
 
           {/* Simplified Tabs Centered */}
@@ -90,10 +90,6 @@ export default function Dashboard() {
                   XP
               </button>
           </div>
-      </div>
-
-      <div className="pt-6">
-        <XPProgress days={user.sprintDays} level={user.level} />
       </div>
 
       <div className="flex-1 px-6 space-y-8 mt-6">
