@@ -10,7 +10,7 @@ import SocialPage from "@/pages/social";
 import ProfilePage from "@/pages/profile";
 import ExplorePage from "@/pages/explore";
 import Layout from "@/components/layout";
-import { HabitsProvider } from "@/hooks/use-habits";
+import { HabitsProvider, useHabits } from "@/hooks/use-habits";
 
 function Router() {
   return (
@@ -28,11 +28,34 @@ function Router() {
   );
 }
 
+function AppContent() {
+  const { isLoading } = useHabits();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-6">
+          <div className="relative">
+            <div className="h-16 w-16 mx-auto rounded-full border-4 border-white/10 border-t-primary animate-spin" />
+            <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full" />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-2xl font-display font-black tracking-tighter uppercase italic text-primary">LOCKED IN</h2>
+            <p className="text-[10px] uppercase tracking-[0.3em] font-black text-muted-foreground">Initializing System...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return <Router />;
+}
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <HabitsProvider>
-        <Router />
+        <AppContent />
         <Toaster />
       </HabitsProvider>
     </QueryClientProvider>
