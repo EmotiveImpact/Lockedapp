@@ -1,0 +1,65 @@
+PROTOCOLS
+SYSTEM STATUS:
+LVL
+0
+ACTIVE
+[0] (228,201)<button class='px-6 py-4 text-xs uppercase tracking-[0.2em] transition-all duration-300 border-b-2 border-primary text-primary font-black'>Today />
+[1] (420,201)<button class='px-6 py-4 text-xs uppercase tracking-[0.2em] transition-all duration-300 border-b-2 border-transparent text-muted-foreground opacity-30'>Habits />
+[2] (584,201)<button class='px-6 py-4 text-xs uppercase tracking-[0.2em] transition-all duration-300 border-b-2 border-transparent text-muted-foreground opacity-30'>XP />
+[3] (757,201)<button class='px-6 py-4 text-xs uppercase tracking-[0.2em] transition-all duration-300 border-b-2 border-transparent text-muted-foreground opacity-30'>Library />
+[4] (500,303)<div  />
+	[5] (500,303)<div  />
+		[6] (302,303)<div  />
+			[7] (302,293)<h3 >Wake up at 5 AM />
+			[8] (302,320)<p >+
+50
+XP />
+		[9] (804,303)<div  />
+[10] (500,416)<div  />
+	[11] (500,416)<div  />
+		[12] (310,416)<div  />
+			[13] (310,406)<h3 >Write in journal />
+			[14] (310,432)<p >+
+30
+XP />
+		[15] (804,416)<div  />
+[16] (500,528)<div  />
+	[17] (500,528)<div  />
+		[18] (303,528)<div  />
+			[19] (303,519)<h3 >No social media />
+			[20] (303,545)<p >+
+45
+XP />
+		[21] (804,528)<div  />
+[22] (500,641)<div  />
+	[23] (500,641)<div  />
+		[24] (333,641)<div  />
+			[25] (333,631)<h3 >Practice gratitude />
+			[26] (333,658)<p >+
+35
+XP />
+		[27] (804,641)<div  />
+[28] (500,754)<div  />
+	[29] (500,754)<div  />
+		[30] (246,754)<div  />
+			[31] (246,744)<h3 >Eat clean />
+			[32] (246,770)<p >+
+45
+XP />
+		[33] (804,754)<div  />
+[34] (500,866)<div  />
+	[35] (500,866)<div  />
+		[36] (287,866)<div  />
+			[37] (287,856)<h3 >8 hours sleep />
+			[38] (287,883)<p >+
+40
+XP />
+		[39] (804,866)<div  />
+45min Workout
++
+60
+XP
+[40] (177,946)<a class='flex flex-col items-center justify-center gap-1 w-16 h-14 transition-all duration-300 group text-muted-foreground hover:text-foreground' href='/' />
+[41] (351,946)<a class='flex flex-col items-center justify-center gap-1 w-16 h-14 transition-all duration-300 group text-muted-foreground hover:text-foreground mr-8' href='/social' />
+[42] (649,946)<a class='flex flex-col items-center justify-center gap-1 w-16 h-14 transition-all duration-300 group text-muted-foreground hover:text-foreground ml-8' href='/explore' />
+[43] (823,946)<a class='flex flex-col items-center justify-center gap-1 w-16 h-14 transition-all duration-300 group text-muted-foreground hover:text-foreground' href='/profile' />

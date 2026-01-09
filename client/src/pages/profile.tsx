@@ -1,72 +1,95 @@
-import { useState } from "react";
 import { useHabits } from "@/hooks/use-habits";
-import { useAuth } from "@/hooks/use-auth";
-import { Settings, ChevronRight, Bell, Moon, Volume2, Shield, Mail, Lock, User as UserIcon, Download, Trash2, LogOut, Camera } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
+import { Settings, ChevronRight, Zap, Target, Flame, Activity, ShieldCheck, HeartPulse, Moon, ArrowRight, Camera } from "lucide-react";
 import { UserAvatar } from "@/components/user-avatar";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { updateUserName, exportUserData, deleteAccount, uploadProfilePhoto } from "@/lib/api";
-import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
+import { motion } from "framer-motion";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { uploadProfilePhoto } from "@/lib/api";
+import { useToast } from "@/hooks/use-toast";
+
+interface CircularProgressProps {
+  value: number;
+  max: number;
+  label: string;
+  sublabelText: string;
+  color: string;
+  size?: number;
+}
+
+function CircularProgress({ value, max, label, sublabelText, color, size = 100 }: CircularProgressProps) {
+  const percentage = Math.min(Math.round((value / max) * 100), 100);
+  const radius = size * 0.4;
+  const strokeWidth = size * 0.08;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (percentage / 100) * circumference;
+
+  return (
+    <div className="flex flex-col items-center gap-2">
+      <div className="relative" style={{ width: size, height: size }}>
+        {/* Background Circle */}
+        <svg className="w-full h-full -rotate-90">
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            fill="transparent"
+            stroke="currentColor"
+            strokeWidth={strokeWidth}
+            className="text-white/5"
+          />
+          {/* Progress Circle */}
+          <motion.circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            fill="transparent"
+            stroke={color}
+            strokeWidth={strokeWidth}
+            strokeDasharray={circumference}
+            initial={{ strokeDashoffset: circumference }}
+            animate={{ strokeDashoffset: offset }}
+            transition={{ duration: 1.5, ease: "easeOut" }}
+            strokeLinecap="round"
+          />
+        </svg>
+        {/* Center Text */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <span className="text-2xl font-display font-black leading-none">{label}</span>
+          <span className="text-[8px] font-black opacity-40 uppercase tracking-tighter">
+            {percentage}%
+          </span>
+        </div>
+      </div>
+      <div className="flex flex-col items-center">
+        <span className="text-[10px] uppercase font-black tracking-widest text-white/60">{sublabelText}</span>
+        <ChevronRight className="h-3 w-3 text-white/20 mt-0.5" />
+      </div>
+    </div>
+  );
+}
 
 export default function ProfilePage() {
-  const { user } = useHabits();
-  const { logoutMutation } = useAuth();
+  const { user, habits } = useHabits();
+  const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [, setLocation] = useLocation();
-  const [isSettingsOpen, setSettingsOpen] = useState(false);
-  const [newName, setNewName] = useState(user.name);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-
-  const updateNameMutation = useMutation({
-    mutationFn: updateUserName,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user'] });
-      toast({ title: "Name Updated", description: "Your display name has been changed." });
-      setNewName(user.name);
-    },
-  });
-
-  const deleteAccountMutation = useMutation({
-    mutationFn: deleteAccount,
-    onSuccess: () => {
-      toast({ title: "Account Deleted", description: "Your account has been permanently deleted." });
-      setLocation("/auth");
-    },
-  });
-
-  const handleExport = async () => {
-    try {
-      await exportUserData();
-      toast({ title: "Data Exported", description: "Your data has been downloaded." });
-    } catch (error) {
-      toast({ title: "Export Failed", description: "Could not export data.", variant: "destructive" });
-    }
-  };
 
   const uploadPhotoMutation = useMutation({
     mutationFn: uploadProfilePhoto,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user'] });
-      toast({ title: "Photo Updated", description: "Your profile photo has been changed." });
+      queryClient.invalidateQueries({ queryKey: ["user"] });
+      toast({ title: "PHOTO SYNCED", description: "Identity updated correctly." });
     },
   });
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
-    // Check file size (max 2MB)
     if (file.size > 2 * 1024 * 1024) {
-      toast({ title: "File Too Large", description: "Please select an image under 2MB.", variant: "destructive" });
+      toast({ title: "FILE TOO LARGE", description: "Max payload size is 2MB.", variant: "destructive" });
       return;
     }
-    
     const reader = new FileReader();
     reader.onloadend = () => {
       const base64 = reader.result as string;
@@ -75,197 +98,176 @@ export default function ProfilePage() {
     reader.readAsDataURL(file);
   };
 
-  const sections = [
-    {
-      title: "Account",
-      icon: UserIcon,
-      items: [
-        { label: "Edit Name", icon: UserIcon, type: "action", action: () => setSettingsOpen(true) },
-        { label: "Export Data", icon: Download, type: "action", action: handleExport },
-      ]
-    },
-    {
-      title: "Preferences",
-      icon: Settings,
-      items: [
-        { label: "Notifications", icon: Bell, type: "switch" },
-        { label: "Dark Mode", icon: Moon, type: "switch", defaultValue: true },
-        { label: "Sound Effects", icon: Volume2, type: "switch" },
-      ]
-    }
-  ];
-
+  // Calculate daily stats for the rings
+  const completedHabitsCount = habits?.filter(h => user.todayCompletions.includes(h.id)).length || 0;
+  const totalHabitsCount = habits?.length || 1;
+  const levelProgress = user.currentXp % user.nextLevelXp;
+  
   return (
-    <div className="flex flex-col min-h-full pb-32 bg-black">
-       {/* Header */}
-       <header className="p-8 pb-0 border-b border-white/5 bg-gradient-to-b from-black/80 via-black/40 to-black/0 backdrop-blur-md sticky top-0 z-20 flex flex-col items-center relative">
-        <div className="w-full flex items-center justify-center absolute top-8 px-6 left-0">
-          <h1 className="text-5xl font-display font-black tracking-tighter italic leading-none uppercase whitespace-nowrap">LOCKED IN</h1>
+    <div className="flex flex-col min-h-full pb-32 bg-black text-white font-sans selection:bg-primary selection:text-black">
+      {/* Top Navigation - Whoop Style */}
+      <header className="px-6 py-6 flex items-center justify-between sticky top-0 bg-black/60 backdrop-blur-xl z-50">
+        <div className="flex items-center gap-3">
+          <div className="relative group">
+            <UserAvatar 
+              src={user.profilePhoto} 
+              name={user.name} 
+              id={user.id} 
+              className="h-10 w-10 border-2 border-primary/20"
+            />
+            <label 
+              htmlFor="profile-upload" 
+              className="absolute -bottom-1 -right-1 h-5 w-5 bg-primary rounded-full flex items-center justify-center cursor-pointer shadow-lg active:scale-90 transition-all border-2 border-black"
+            >
+              <Camera className="h-2.5 w-2.5 text-black" />
+            </label>
+            <input id="profile-upload" type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
+          </div>
+          <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 px-3 py-1.5 rounded-full">
+            <Flame className="h-3.5 w-3.5 text-[#FF5F1F]" fill="currentColor" />
+            <span className="text-xs font-black tracking-tighter">{user.streak}</span>
+          </div>
         </div>
 
-        <div className="mt-16 mb-4 flex flex-col items-center w-full px-4">
-          <p className="text-muted-foreground text-[10px] uppercase tracking-[0.4em] font-black">SYSTEM STATUS: <span className="text-primary">LVL {user.level} ACTIVE</span></p>
+        <div className="flex items-center gap-1.5">
+          <ChevronRight className="h-4 w-4 text-white/20 rotate-180" />
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] px-4 py-1.5 bg-white/5 border border-white/10 rounded-full">TODAY</span>
+          <ChevronRight className="h-4 w-4 text-white/20" />
         </div>
+
+        <button 
+          onClick={() => setLocation("/settings")}
+          className="p-2.5 rounded-full bg-white/5 border border-white/10 active:scale-95 transition-all text-white/60 hover:text-white"
+        >
+          <Settings className="h-5 w-5" />
+        </button>
       </header>
 
-      <div className="p-6 space-y-6">
-        {/* Profile Header Card */}
-        <div className="bg-white/5 border border-white/10 rounded-[40px] p-8 flex items-center gap-6 shadow-2xl relative overflow-hidden">
-            <div className="absolute inset-0 bg-primary/5 blur-[60px] translate-x-1/2" />
-            <div className="relative">
-              <UserAvatar 
-                src={user.profilePhoto} 
-                name={user.name}
-                id={user.id}
-                className="h-24 w-24 border-4 border-primary/20 relative z-10"
-                fallbackClassName="text-xl"
-              />
-              <label 
-                htmlFor="photo-upload" 
-                className="absolute bottom-0 right-0 h-8 w-8 bg-primary rounded-full flex items-center justify-center cursor-pointer hover:scale-110 transition-transform z-20 shadow-lg"
-              >
-                <Camera className="h-4 w-4 text-black" />
-              </label>
-              <input
-                id="photo-upload"
-                type="file"
-                accept="image/*"
-                onChange={handlePhotoUpload}
-                className="hidden"
-              />
-            </div>
-            <div className="flex-1 relative z-10">
-              <h2 className="text-2xl font-black tracking-tight">{user.name}</h2>
-              <p className="text-primary text-[10px] uppercase font-black tracking-widest mt-1 italic">LOCKED IN MEMBER</p>
-            </div>
+      <div className="flex flex-col items-center mt-4">
+        <h1 className="text-3xl font-display font-black uppercase tracking-widest text-[#E0E0E0] opacity-80 mb-8 italic">CORE SYSTEM</h1>
+
+        {/* The Three Rings - WHOOP Style */}
+        <div className="grid grid-cols-3 w-full px-6 gap-2 mb-12">
+          <CircularProgress 
+            value={completedHabitsCount} 
+            max={totalHabitsCount} 
+            label={completedHabitsCount.toString()} 
+            sublabelText="TODAY" 
+            color="#00E676" 
+          />
+          <CircularProgress 
+            value={levelProgress} 
+            max={user.nextLevelXp} 
+            label={percentageToString(levelProgress, user.nextLevelXp)} 
+            sublabelText="LEVEL" 
+            color="#2979FF" 
+          />
+          <CircularProgress 
+            value={user.currentXp} 
+            max={user.nextLevelXp * 10} 
+            label={user.level.toString()} 
+            sublabelText="STATUS" 
+            color="#D500F9" 
+          />
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-3 gap-4">
-          <div className="bg-white/5 border border-white/10 rounded-[32px] p-6 text-center">
-            <div className="text-primary text-3xl font-display font-black leading-none mb-1 drop-shadow-[0_0_8px_rgba(204,255,0,0.3)]">{user.currentXp}</div>
-            <div className="text-[10px] uppercase text-muted-foreground font-black tracking-widest">Total XP</div>
-          </div>
-          <div className="bg-white/5 border border-white/10 rounded-[32px] p-6 text-center">
-            <div className="text-white text-3xl font-display font-black leading-none mb-1">{user.level}</div>
-            <div className="text-[10px] uppercase text-muted-foreground font-black tracking-widest">Level</div>
-          </div>
-          <div className="bg-white/5 border border-white/10 rounded-[32px] p-6 text-center">
-            <div className="text-white text-3xl font-display font-black leading-none mb-1">{user.streak}</div>
-            <div className="text-[10px] uppercase text-muted-foreground font-black tracking-widest">Streak</div>
-          </div>
-        </div>
-
-        {/* Settings Sections */}
-        {sections.map((section) => {
-          const SectionIcon = section.icon;
-          return (
-            <div key={section.title} className="bg-white/5 border border-white/10 rounded-[32px] p-6 space-y-4">
-              <div className="flex items-center gap-3 mb-4">
-                <SectionIcon className="h-5 w-5 text-primary" />
-                <h3 className="font-display font-black uppercase tracking-widest text-sm">{section.title}</h3>
+        {/* Information Monitors */}
+        <div className="grid grid-cols-2 w-full px-6 gap-4 mb-8">
+          <div className="bg-[#151515] border border-white/10 rounded-[32px] p-6 space-y-3">
+            <div className="flex items-center justify-between text-muted-foreground">
+              <span className="text-[9px] font-black uppercase tracking-widest">System Monitor</span>
+              <ChevronRight className="h-3 w-3" />
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-[#00E676]/10 flex items-center justify-center border border-[#00E676]/20 shadow-[0_0_20px_rgba(0,230,118,0.1)]">
+                <ShieldCheck className="h-5 w-5 text-[#00E676]" />
               </div>
-              {section.items.map((item) => {
-                const ItemIcon = item.icon;
-                return (
-                  <div 
-                    key={item.label} 
-                    className={cn(
-                      "flex items-center justify-between p-4 rounded-2xl transition-all",
-                      item.type === "action" ? "hover:bg-white/5 cursor-pointer active:scale-[0.98]" : "bg-black/20"
-                    )}
-                    onClick={item.type === "action" && 'action' in item ? item.action : undefined}
-                  >
-                    <div className="flex items-center gap-3">
-                      <ItemIcon className="h-5 w-5 text-muted-foreground" />
-                      <span className="font-medium">{item.label}</span>
-                    </div>
-                    {item.type === "switch" ? (
-                      <Switch defaultChecked={'defaultValue' in item ? item.defaultValue : false} />
-                    ) : (
-                      <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          );
-        })}
-
-        {/* Danger Zone */}
-        <div className="bg-destructive/5 border border-destructive/20 rounded-[32px] p-6">
-          <h3 className="font-display font-black uppercase tracking-widest text-sm text-destructive mb-4">Danger Zone</h3>
-          {!showDeleteConfirm ? (
-            <Button 
-              onClick={() => setShowDeleteConfirm(true)}
-              variant="outline"
-              className="w-full h-12 rounded-xl font-black uppercase tracking-wider border-destructive/30 text-destructive hover:bg-destructive/10"
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete Account
-            </Button>
-          ) : (
-            <div className="space-y-3">
-              <p className="text-sm text-white/60">Are you absolutely sure? This cannot be undone.</p>
-              <div className="flex gap-2">
-                <Button 
-                  onClick={() => setShowDeleteConfirm(false)}
-                  variant="outline"
-                  className="flex-1 h-10 rounded-xl"
-                >
-                  Cancel
-                </Button>
-                <Button 
-                  onClick={() => deleteAccountMutation.mutate()}
-                  disabled={deleteAccountMutation.isPending}
-                  className="flex-1 h-10 rounded-xl bg-destructive text-white hover:bg-destructive/90 font-black"
-                >
-                  {deleteAccountMutation.isPending ? "Deleting..." : "Confirm Delete"}
-                </Button>
+              <div>
+                <div className="text-[#00E676] text-xs font-black uppercase tracking-tighter">Operational</div>
+                <div className="text-[9px] text-white/40 uppercase font-black">{completedHabitsCount}/{totalHabitsCount} Tasks Done</div>
               </div>
             </div>
-          )}
+          </div>
+
+          <div className="bg-[#151515] border border-white/10 rounded-[32px] p-6 space-y-3">
+            <div className="flex items-center justify-between text-muted-foreground">
+              <span className="text-[9px] font-black uppercase tracking-widest">Power Reserve</span>
+              <ChevronRight className="h-3 w-3" />
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-[#2979FF]/10 flex items-center justify-center border border-[#2979FF]/20 shadow-[0_0_20px_rgba(41,121,255,0.1)]">
+                <Zap className="h-5 w-5 text-[#2979FF]" />
+              </div>
+              <div>
+                <div className="text-[#2979FF] text-xs font-black uppercase tracking-tighter">Aggressive</div>
+                <div className="text-[9px] text-white/40 uppercase font-black">{user.currentXp} Total XP</div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Logout */}
-        <Button 
-          onClick={() => logoutMutation.mutate()}
-          disabled={logoutMutation.isPending}
-          variant="outline"
-          className="w-full h-14 rounded-xl font-black uppercase tracking-wider border-white/10 hover:border-destructive/50 hover:text-destructive"
-        >
-          <LogOut className="mr-2 h-5 w-5" />
-          {logoutMutation.isPending ? "Logging out..." : "Logout"}
-        </Button>
+        {/* My System - Actionable Banner */}
+        <div className="w-full px-6 mb-8">
+           <h2 className="text-xl font-display font-black tracking-tight mb-4 ml-2">My System</h2>
+           <div className="bg-gradient-to-r from-[#1A1C2E] to-[#121422] border border-white/10 rounded-[32px] p-6 flex items-center justify-between group cursor-pointer active:scale-[0.98] transition-all">
+              <div className="flex items-center gap-5">
+                <div className="h-12 w-12 rounded-full border border-white/10 flex items-center justify-center bg-white/5 group-hover:bg-white/10 transition-all">
+                   <Target className="h-6 w-6 text-white/60" />
+                </div>
+                <div>
+                   <div className="flex items-center gap-2">
+                      <span className="h-1 w-1 rounded-full bg-primary animate-pulse" />
+                      <span className="text-sm font-bold tracking-tight">System Performance Review</span>
+                   </div>
+                   <p className="text-[10px] text-white/40 uppercase font-black tracking-wider mt-1 italic">Scan complete. Optimization required.</p>
+                </div>
+              </div>
+              <ChevronRight className="h-5 w-5 text-white/20 group-hover:translate-x-1 transition-transform" />
+           </div>
+        </div>
+
+        {/* Secondary Info Cards */}
+        <div className="w-full px-6 space-y-4">
+           {/* Sleep/Recovery Style Monitor */}
+           <div className="bg-[#151515] border border-white/10 rounded-[40px] p-8 relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-6">
+                <ChevronRight className="h-5 w-5 text-white/20" />
+              </div>
+              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-white/40 mb-6 px-1">SYSTEM RESTORE</h3>
+              
+              <div className="flex items-center gap-8">
+                <div className="flex-1 space-y-6">
+                   <div className="flex items-center gap-4">
+                      <Moon className="h-6 w-6 text-primary" />
+                      <div>
+                        <div className="text-2xl font-black italic">OPTIMAL</div>
+                        <div className="text-[8px] uppercase tracking-widest font-black text-primary animate-pulse">Ready for lock-in</div>
+                      </div>
+                   </div>
+                   
+                   <div className="h-px w-full bg-white/5" />
+                   
+                   <button className="flex items-center justify-center gap-2 w-full py-3 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition-all active:scale-[0.98]">
+                      <Activity className="h-3.5 w-3.5 text-white/40" />
+                      <span className="text-[9px] font-black uppercase tracking-widest">Detailed Analytics</span>
+                   </button>
+                </div>
+                
+                {/* Visualizer placeholder */}
+                <div className="h-32 w-16 bg-gradient-to-t from-primary/5 to-primary/20 rounded-full border border-primary/20 flex flex-col items-center justify-end p-1 gap-1">
+                   <div className="w-full h-8 bg-primary rounded-full shadow-[0_0_15px_rgba(204,255,0,0.4)]" />
+                   <div className="w-full h-6 bg-primary/40 rounded-full" />
+                   <div className="w-full h-12 bg-primary/10 rounded-full" />
+                </div>
+              </div>
+           </div>
+        </div>
       </div>
-
-      {/* Edit Name Dialog */}
-      <Dialog open={isSettingsOpen} onOpenChange={setSettingsOpen}>
-        <DialogContent className="bg-card border-white/10 text-foreground rounded-[32px]">
-          <DialogHeader>
-            <DialogTitle className="font-display tracking-widest uppercase italic">Edit Name</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 pt-4">
-            <div className="space-y-2">
-              <label className="text-[10px] uppercase text-muted-foreground font-black tracking-widest">Display Name</label>
-              <div className="flex gap-2">
-                <Input 
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
-                  className="bg-black/40 border-white/10 h-12 rounded-xl flex-1"
-                />
-                <Button 
-                  onClick={() => updateNameMutation.mutate(newName)}
-                  disabled={newName === user.name || updateNameMutation.isPending}
-                  className="bg-primary text-black hover:bg-primary/90 h-12 px-6 rounded-xl font-black"
-                >
-                  {updateNameMutation.isPending ? "..." : "Save"}
-                </Button>
-              </div>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
+}
+
+function percentageToString(value: number, max: number): string {
+  const p = Math.min(Math.round((value / max) * 100), 100);
+  return `${p}%`;
 }

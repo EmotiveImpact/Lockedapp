@@ -8,6 +8,7 @@ import HomePage from "@/pages/home";
 import HabitsPage from "@/pages/habits";
 import SocialPage from "@/pages/social";
 import ProfilePage from "@/pages/profile";
+import SettingsPage from "@/pages/settings";
 import ExplorePage from "@/pages/explore";
 import AuthPage from "@/pages/auth-page";
 import Layout from "@/components/layout";
@@ -81,6 +82,11 @@ function Router() {
           <Layout>
             <ProfilePage />
           </Layout>
+        </ProtectedRoute>
+      </Route>
+      <Route path="/settings">
+        <ProtectedRoute>
+          <SettingsPage />
         </ProtectedRoute>
       </Route>
       <Route>
