@@ -1,9 +1,12 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
+import { storage, db } from "./storage";
+import { users, habits, dailyCompletions, userProgress } from "@shared/schema";
+import { eq } from "drizzle-orm";
 import { z } from "zod";
+import { setupAuth } from "./auth";
 
-const SINGLE_USER_ID = 1; // For MVP, we use a single user
+
 
 // Helper to get today's date in YYYY-MM-DD format
 function getTodayDate(): string {
@@ -22,62 +25,21 @@ export async function registerRoutes(
   app: Express
 ): Promise<Server> {
   
-  // Initialize default user and habits on first run
-  app.get("/api/init", async (req, res) => {
-    try {
-      let user = await storage.getUser(SINGLE_USER_ID);
-      
-      if (!user) {
-        // Create default user
-        user = await storage.createUser({
-          username: "guest",
-          name: "Guest User",
-        });
-        
-        // Create default habits
-        const defaultHabits = [
-          { title: 'Wake up at 5 AM', xp: 50, category: 'routine' },
-          { title: 'Cold shower', xp: 40, category: 'health' },
-          { title: 'Write in journal', xp: 30, category: 'mindset' },
-          { title: 'No social media', xp: 45, category: 'mindset' },
-          { title: 'Practice gratitude', xp: 35, category: 'mindset' },
-          { title: 'Eat clean', xp: 45, category: 'health' },
-          { title: '8 hours sleep', xp: 40, category: 'health' },
-          { title: '45min Workout', xp: 60, category: 'fitness' },
-        ];
-        
-        for (const habit of defaultHabits) {
-          await storage.createHabit(user.id, habit.title, habit.xp, habit.category);
-        }
-        
-        // Initialize user progress
-        await storage.updateUserProgress(user.id, {
-          currentXp: 120,
-          level: 0,
-          streak: 3,
-          sprintDays: JSON.stringify(Array(28).fill('pending').map((s: string, i: number) => i < 2 ? 'completed' : s)),
-          lastCompletedDate: null,
-        });
-      }
-      
-      res.json({ success: true, userId: user.id });
-    } catch (error) {
-      console.error("Init error:", error);
-      res.status(500).json({ message: "Failed to initialize" });
-    }
-  });
+  setupAuth(app);
 
   // Get current user with progress
   app.get("/api/user", async (req, res) => {
     try {
-      const user = await storage.getUser(SINGLE_USER_ID);
+      if (!req.isAuthenticated()) return res.status(401).json({ message: "Not authenticated" });
+      const userId = (req.user as any).id;
+      const user = await storage.getUser(userId);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
       
-      const progress = await storage.getUserProgress(SINGLE_USER_ID);
+      const progress = await storage.getUserProgress(userId);
       const today = getTodayDate();
-      const todayCompletions = await storage.getTodayCompletions(SINGLE_USER_ID, today);
+      const todayCompletions = await storage.getTodayCompletions(userId, today);
       
       const { level, nextLevelXp } = calculateLevel(progress?.currentXp || 0);
       
@@ -90,6 +52,7 @@ export async function registerRoutes(
         streak: progress?.streak || 0,
         todayCompletions,
         sprintDays: JSON.parse(progress?.sprintDays || "[]"),
+        profilePhoto: user.profilePhoto,
       });
     } catch (error) {
       console.error("Get user error:", error);
@@ -100,7 +63,9 @@ export async function registerRoutes(
   // Get all habits
   app.get("/api/habits", async (req, res) => {
     try {
-      const habits = await storage.getHabits(SINGLE_USER_ID);
+      if (!req.isAuthenticated()) return res.status(401).json({ message: "Not authenticated" });
+      const userId = (req.user as any).id;
+      const habits = await storage.getHabits(userId);
       res.json(habits);
     } catch (error) {
       console.error("Get habits error:", error);
@@ -117,8 +82,11 @@ export async function registerRoutes(
         category: z.enum(['health', 'mindset', 'fitness', 'routine']),
       });
       
+      
+      if (!req.isAuthenticated()) return res.status(401).json({ message: "Not authenticated" });
+      const userId = (req.user as any).id;
       const data = schema.parse(req.body);
-      const habit = await storage.createHabit(SINGLE_USER_ID, data.title, data.xp, data.category);
+      const habit = await storage.createHabit(userId, data.title, data.xp, data.category);
       
       res.json(habit);
     } catch (error) {
@@ -130,6 +98,8 @@ export async function registerRoutes(
   // Delete habit
   app.delete("/api/habits/:id", async (req, res) => {
     try {
+      if (!req.isAuthenticated()) return res.status(401).json({ message: "Not authenticated" });
+      // TODO: Verify habit belongs to user
       const habitId = parseInt(req.params.id);
       await storage.deleteHabit(habitId);
       res.json({ success: true });
@@ -144,10 +114,13 @@ export async function registerRoutes(
     try {
       const habitId = parseInt(req.params.id);
       const today = getTodayDate();
+
+      if (!req.isAuthenticated()) return res.status(401).json({ message: "Not authenticated" });
+      const userId = (req.user as any).id;
       
       // Get current progress
-      const progress = await storage.getUserProgress(SINGLE_USER_ID);
-      const habits = await storage.getHabits(SINGLE_USER_ID);
+      const progress = await storage.getUserProgress(userId);
+      const habits = await storage.getHabits(userId);
       const habit = habits.find(h => h.id === habitId);
       
       if (!habit) {
@@ -155,7 +128,7 @@ export async function registerRoutes(
       }
       
       // Toggle completion
-      const isNowCompleted = await storage.toggleHabitCompletion(SINGLE_USER_ID, habitId, today);
+      const isNowCompleted = await storage.toggleHabitCompletion(userId, habitId, today);
       
       // Update XP
       let newXp = progress?.currentXp || 0;
@@ -165,12 +138,12 @@ export async function registerRoutes(
         newXp -= habit.xp;
       }
       
-      await storage.updateUserProgress(SINGLE_USER_ID, {
+      await storage.updateUserProgress(userId, {
         currentXp: newXp,
       });
       
       // Get updated completions
-      const todayCompletions = await storage.getTodayCompletions(SINGLE_USER_ID, today);
+      const todayCompletions = await storage.getTodayCompletions(userId, today);
       const { level, nextLevelXp } = calculateLevel(newXp);
       
       res.json({
@@ -190,7 +163,9 @@ export async function registerRoutes(
   // Complete day
   app.post("/api/day/complete", async (req, res) => {
     try {
-      const progress = await storage.getUserProgress(SINGLE_USER_ID);
+      if (!req.isAuthenticated()) return res.status(401).json({ message: "Not authenticated" });
+      const userId = (req.user as any).id;
+      const progress = await storage.getUserProgress(userId);
       const sprintDays = JSON.parse(progress?.sprintDays || "[]");
       
       // Find next pending day
@@ -200,14 +175,14 @@ export async function registerRoutes(
       }
       
       const today = getTodayDate();
-      await storage.updateUserProgress(SINGLE_USER_ID, {
+      await storage.updateUserProgress(userId, {
         sprintDays: JSON.stringify(sprintDays),
         streak: (progress?.streak || 0) + 1,
         lastCompletedDate: today,
       });
       
       // Clear today's completions
-      await storage.clearTodayCompletions(SINGLE_USER_ID, today);
+      await storage.clearTodayCompletions(userId, today);
       
       res.json({
         success: true,
@@ -223,7 +198,9 @@ export async function registerRoutes(
   // Fail day
   app.post("/api/day/fail", async (req, res) => {
     try {
-      const progress = await storage.getUserProgress(SINGLE_USER_ID);
+      if (!req.isAuthenticated()) return res.status(401).json({ message: "Not authenticated" });
+      const userId = (req.user as any).id;
+      const progress = await storage.getUserProgress(userId);
       const sprintDays = JSON.parse(progress?.sprintDays || "[]");
       
       // Find next pending day
@@ -233,14 +210,14 @@ export async function registerRoutes(
       }
       
       const today = getTodayDate();
-      await storage.updateUserProgress(SINGLE_USER_ID, {
+      await storage.updateUserProgress(userId, {
         sprintDays: JSON.stringify(sprintDays),
         streak: 0,
         lastCompletedDate: today,
       });
       
       // Clear today's completions
-      await storage.clearTodayCompletions(SINGLE_USER_ID, today);
+      await storage.clearTodayCompletions(userId, today);
       
       res.json({
         success: true,
@@ -250,6 +227,141 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Fail day error:", error);
       res.status(500).json({ message: "Failed to mark day as failed" });
+    }
+  });
+
+  // Get leaderboard
+  app.get("/api/leaderboard", async (req, res) => {
+    try {
+      const limit = Math.min(parseInt(req.query.limit as string) || 50, 100);
+      const leaderboard = await storage.getLeaderboard(limit);
+      
+      // Calculate level for each user
+      const leaderboardWithLevel = leaderboard.map(entry => ({
+        ...entry,
+        level: Math.floor(entry.xp / 500),
+      }));
+      
+      res.json(leaderboardWithLevel);
+    } catch (error) {
+      console.error("Leaderboard error:", error);
+      res.status(500).json({ message: "Failed to get leaderboard" });
+    }
+  });
+
+  // Bulk create habits (for protocol library)
+  app.post("/api/habits/bulk", async (req, res) => {
+    try {
+      const schema = z.object({
+        habits: z.array(z.object({
+          title: z.string().min(1),
+          xp: z.number().min(1),
+          category: z.enum(['health', 'mindset', 'fitness', 'routine']),
+        })),
+      });
+      
+      if (!req.isAuthenticated()) return res.status(401).json({ message: "Not authenticated" });
+      const userId = (req.user as any).id;
+      const data = schema.parse(req.body);
+      
+      const createdHabits = [];
+      for (const habit of data.habits) {
+        const created = await storage.createHabit(userId, habit.title, habit.xp, habit.category);
+        createdHabits.push(created);
+      }
+      
+      res.json(createdHabits);
+    } catch (error) {
+      console.error("Bulk create habits error:", error);
+      res.status(400).json({ message: "Invalid habit data" });
+    }
+  });
+
+  // Settings endpoints
+  app.put("/api/user/name", async (req, res) => {
+    try {
+      const schema = z.object({ name: z.string().min(1).max(50) });
+      if (!req.isAuthenticated()) return res.status(401).json({ message: "Not authenticated" });
+      
+      const userId = (req.user as any).id;
+      const { name } = schema.parse(req.body);
+      
+      // Update user name in database
+      const updatedUser = await db.update(users).set({ name }).where(eq(users.id, userId)).returning();
+      
+      res.json(updatedUser[0]);
+    } catch (error) {
+      console.error("Update name error:", error);
+      res.status(400).json({ message: "Invalid name" });
+    }
+  });
+
+  app.get("/api/user/export", async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) return res.status(401).json({ message: "Not authenticated" });
+      const userId = (req.user as any).id;
+      
+      const user = await storage.getUser(userId);
+      const habits = await storage.getHabits(userId);
+      const progress = await storage.getUserProgress(userId);
+      
+      const exportData = {
+        user,
+        habits,
+        progress,
+        exportedAt: new Date().toISOString(),
+      };
+      
+      res.setHeader('Content-Type', 'application/json');
+      res.setHeader('Content-Disposition', `attachment; filename="lockedin-data-${userId}.json"`);
+      res.json(exportData);
+    } catch (error) {
+      console.error("Export data error:", error);
+      res.status(500).json({ message: "Failed to export data" });
+    }
+  });
+
+  // Update profile photo
+  app.post("/api/user/photo", async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) return res.status(401).json({ message: "Not authenticated" });
+      const userId = (req.user as any).id;
+      
+      const schema = z.object({
+        photoData: z.string(), // base64 encoded image or URL
+      });
+      
+      const { photoData } = schema.parse(req.body);
+      
+      await db.update(users)
+        .set({ profilePhoto: photoData })
+        .where(eq(users.id, userId));
+      
+      res.json({ success: true, photoUrl: photoData });
+    } catch (error) {
+      console.error("Update photo error:", error);
+      res.status(500).json({ message: "Failed to update photo" });
+    }
+  });
+
+  app.delete("/api/user", async (req, res) => {
+    try {
+      if (!req.isAuthenticated()) return res.status(401).json({ message: "Not authenticated" });
+      const userId = (req.user as any).id;
+      
+      // Delete all user data
+      await db.delete(dailyCompletions).where(eq(dailyCompletions.userId, userId));
+      await db.delete(habits).where(eq(habits.userId, userId));
+      await db.delete(userProgress).where(eq(userProgress.userId, userId));
+      await db.delete(users).where(eq(users.id, userId));
+      
+      // Logout
+      req.logout(() => {
+        res.json({ success: true });
+      });
+    } catch (error) {
+      console.error("Delete account error:", error);
+      res.status(500).json({ message: "Failed to delete account" });
     }
   });
 

@@ -3,7 +3,7 @@ import { useHabits } from "@/hooks/use-habits";
 import { XPProgress } from "@/components/xp-progress";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { Check, Plus, Trash2, X } from "lucide-react";
+import { Check, Plus, Trash2, X, Zap, Brain, Flame, Heart, Sparkles, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -20,16 +20,86 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createBulkHabits } from "@/lib/api";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Dashboard() {
-  const { habits, user, toggleHabit, completeDay, failDay, addHabit, removeHabit, setQuickActionOpen } = useHabits();
-  const [activeTab, setActiveTab] = useState<'today' | 'habits' | 'xp'>('today');
+  const { habits, user, toggleHabit, completeDay, failDay, addHabit, removeHabit } = useHabits();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [activeTab, setActiveTab] = useState<'today' | 'habits' | 'xp' | 'library'>('today');
   const [newHabit, setNewHabit] = useState({ title: '', xp: 50, category: 'routine' as const });
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [installedBundles, setInstalledBundles] = useState<Set<string>>(new Set());
+
 
   // UI feedback (haptics + micro-vibration animation) when selecting tasks
-  const [jiggleHabitId, setJiggleHabitId] = useState<string | null>(null);
-  const [flashHabitId, setFlashHabitId] = useState<string | null>(null);
+  const [jiggleHabitId, setJiggleHabitId] = useState<number | null>(null);
+  const [flashHabitId, setFlashHabitId] = useState<number | null>(null);
+
+  // Protocol bundles
+  const PROTOCOL_BUNDLES = [
+    {
+      id: "monk-mode",
+      name: "Monk Mode",
+      description: "Digital detox + deep work",
+      difficulty: "intermediate" as const,
+      icon: Brain,
+      color: "purple",
+      habits: [
+        { title: "No social media", xp: 60, category: "mindset" },
+        { title: "2hr deep work block", xp: 80, category: "mindset" },
+        { title: "Meditation 20min", xp: 50, category: "mindset" },
+        { title: "Read 30 pages", xp: 40, category: "routine" },
+      ],
+    },
+    {
+      id: "75-hard",
+      name: "75 Hard",
+      description: "Ultimate mental toughness",
+      difficulty: "extreme" as const,
+      icon: Flame,
+      color: "red",
+      habits: [
+        { title: "2 workouts (1 outdoor)", xp: 100, category: "fitness" },
+        { title: "Follow diet strictly", xp: 60, category: "health" },
+        { title: "Drink 1 gallon water", xp: 40, category: "health" },
+        { title: "Read 10 pages", xp: 30, category: "routine" },
+      ],
+    },
+    {
+      id: "morning-routine",
+      name: "5AM Club",
+      description: "Own your morning",
+      difficulty: "beginner" as const,
+      icon: Sparkles,
+      color: "yellow",
+      habits: [
+        { title: "Wake up at 5 AM", xp: 50, category: "routine" },
+        { title: "Cold shower", xp: 40, category: "health" },
+        { title: "Journal 10min", xp: 30, category: "mindset" },
+        { title: "Workout 20min", xp: 50, category: "fitness" },
+      ],
+    },
+  ];
+
+  const installMutation = useMutation({
+    mutationFn: createBulkHabits,
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['habits'] });
+      toast({
+        title: "PROTOCOL INSTALLED",
+        description: `Added ${variables.length} habits to your system.`,
+        className: "bg-primary text-primary-foreground border-none font-display uppercase tracking-wider"
+      });
+    },
+  });
+
+  const handleInstall = (bundle: typeof PROTOCOL_BUNDLES[0]) => {
+    installMutation.mutate(bundle.habits);
+    setInstalledBundles(prev => new Set(prev).add(bundle.id));
+  };
 
   const sortedHabits = [...habits].sort((a, b) => {
     const aCompleted = user.todayCompletions.includes(a.id);
@@ -51,7 +121,7 @@ export default function Dashboard() {
     }
   };
 
-  const handleHabitPress = (habitId: string) => {
+  const handleHabitPress = (habitId: number) => {
     triggerHaptic();
 
     setJiggleHabitId(habitId);
@@ -73,10 +143,10 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col min-h-full pb-32">
-      {/* Protocol Header - LockedIn 1 (Sticky) */}
-      <div className="p-8 pb-0 bg-gradient-to-b from-black/80 via-black/40 to-black/0 backdrop-blur-md sticky top-0 z-40 border-b border-white/5 flex flex-col items-center">
+      {/* Protocol Header */}
+      <div className="p-8 pb-0 bg-gradient-to-b from-black/80 via-black/40 to-black/0 backdrop-blur-md sticky top-0 z-20 border-b border-white/5 flex flex-col items-center">
           <div className="w-full flex items-center justify-center absolute top-8 px-6 left-0">
-            <h1 className="text-5xl font-display font-black tracking-tighter italic leading-none uppercase whitespace-nowrap">LOCKED IN</h1>
+            <h1 className="text-5xl font-display font-black tracking-tighter italic leading-none uppercase whitespace-nowrap">PROTOCOLS</h1>
           </div>
           
           <div className="mt-16 mb-4 flex flex-col items-center w-full px-4">
@@ -84,7 +154,7 @@ export default function Dashboard() {
             {/* 28 Dots directly under Status */}
             <XPProgress days={user.sprintDays} level={user.level} />
           </div>
-
+      
           {/* Simplified Tabs Centered */}
           <div className="flex justify-center w-full border-t border-white/5">
               <button 
@@ -113,6 +183,15 @@ export default function Dashboard() {
                   )}
               >
                   XP
+              </button>
+              <button 
+                  onClick={() => setActiveTab('library')}
+                  className={cn(
+                      "px-6 py-4 text-xs uppercase tracking-[0.2em] transition-all duration-300 border-b-2",
+                      activeTab === 'library' ? "border-primary text-primary font-black" : "border-transparent text-muted-foreground opacity-30"
+                  )}
+              >
+                  Library
               </button>
           </div>
       </div>
@@ -210,12 +289,15 @@ export default function Dashboard() {
           )}
 
           {activeTab === 'habits' && (
-            <div className="space-y-8 animate-in fade-in">
+            <div className="space-y-8 animate-in fade-in pb-10">
                 <div className="flex items-center justify-between px-2">
-                    <h2 className="text-2xl font-display font-black tracking-widest italic">PROTOCOLS</h2>
+                    <div>
+                        <h2 className="text-2xl font-display font-black tracking-widest italic">PROTOCOLS</h2>
+                        <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest mt-1">Manage your system</p>
+                    </div>
                     <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
                         <DialogTrigger asChild>
-                            <Button size="icon" className="rounded-full h-12 w-12 bg-white/5 text-primary border border-white/10">
+                            <Button size="icon" className="rounded-full h-12 w-12 bg-primary text-black hover:bg-primary/90 shadow-[0_0_20px_rgba(204,255,0,0.3)] transition-all hover:scale-105 active:scale-95">
                                 <Plus size={24} />
                             </Button>
                         </DialogTrigger>
@@ -229,7 +311,8 @@ export default function Dashboard() {
                                     <Input 
                                     value={newHabit.title} 
                                     onChange={(e) => setNewHabit({ ...newHabit, title: e.target.value })}
-                                    className="bg-black/40 border-white/10 h-14 rounded-xl"
+                                    className="bg-black/40 border-white/10 h-14 rounded-xl focus:border-primary/50 transition-colors"
+                                    placeholder="e.g. Cold Plunge"
                                     />
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
@@ -239,7 +322,7 @@ export default function Dashboard() {
                                             type="number" 
                                             value={newHabit.xp} 
                                             onChange={(e) => setNewHabit({...newHabit, xp: Number(e.target.value)})} 
-                                            className="bg-black/40 border-white/10 h-14 rounded-xl"
+                                            className="bg-black/40 border-white/10 h-14 rounded-xl focus:border-primary/50 transition-colors"
                                         />
                                     </div>
                                     <div className="space-y-2">
@@ -248,7 +331,7 @@ export default function Dashboard() {
                                             value={newHabit.category} 
                                             onValueChange={(v: any) => setNewHabit({ ...newHabit, category: v })}
                                         >
-                                            <SelectTrigger className="bg-black/40 border-white/10 h-14 rounded-xl"><SelectValue /></SelectTrigger>
+                                            <SelectTrigger className="bg-black/40 border-white/10 h-14 rounded-xl focus:border-primary/50 transition-colors"><SelectValue /></SelectTrigger>
                                             <SelectContent className="bg-card border-white/10 text-foreground">
                                                 <SelectItem value="routine">Routine</SelectItem>
                                                 <SelectItem value="fitness">Fitness</SelectItem>
@@ -258,34 +341,78 @@ export default function Dashboard() {
                                         </Select>
                                     </div>
                                 </div>
-                                <Button onClick={handleAddHabit} className="w-full bg-primary text-black font-black uppercase h-16 rounded-xl mt-4">Create Protocol</Button>
+                                <Button onClick={handleAddHabit} className="w-full bg-primary text-black font-black uppercase h-16 rounded-xl mt-4 shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all">Create Protocol</Button>
                             </div>
                         </DialogContent>
                     </Dialog>
                 </div>
 
-                <div className="space-y-4">
-                    {habits.map((habit) => (
-                        <div key={habit.id} className="flex items-center justify-between p-6 bg-white/5 border border-white/5 rounded-2xl group">
-                            <div>
-                                <h3 className="font-bold text-lg">{habit.title}</h3>
-                                <p className="text-[10px] text-primary uppercase font-black tracking-[0.3em] mt-1">{habit.category} · {habit.xp} XP</p>
+                <div className="space-y-8">
+                    {['routine', 'fitness', 'health', 'mindset'].map((category) => {
+                        const categoryHabits = habits.filter(h => h.category === category);
+                        if (categoryHabits.length === 0) return null;
+                        
+                        return (
+                            <div key={category} className="space-y-3">
+                                <div className="flex items-center gap-3 px-2">
+                                    <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent" />
+                                    <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">{category}</h3>
+                                    <div className="h-px flex-1 bg-gradient-to-l from-white/10 to-transparent" />
+                                </div>
+                                
+                                <div className="space-y-3">
+                                    {categoryHabits.map((habit) => (
+                                        <motion.div 
+                                            layout
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            key={habit.id} 
+                                            className="flex items-center justify-between p-5 bg-white/5 border border-white/5 rounded-2xl group hover:border-primary/20 transition-all active:scale-[0.99]"
+                                        >
+                                            <div className="flex items-center gap-4">
+                                                <div className={cn(
+                                                    "w-10 h-10 rounded-full flex items-center justify-center border-2 transition-colors",
+                                                    category === 'fitness' ? "border-orange-500/20 text-orange-500 bg-orange-500/5" :
+                                                    category === 'mindset' ? "border-purple-500/20 text-purple-500 bg-purple-500/5" :
+                                                    category === 'health' ? "border-green-500/20 text-green-500 bg-green-500/5" :
+                                                    "border-blue-500/20 text-blue-500 bg-blue-500/5"
+                                                )}>
+                                                    {category === 'fitness' ? <Zap size={18} /> : 
+                                                     category === 'mindset' ? <Check size={18} /> :
+                                                     <Plus size={18} />
+                                                    }
+                                                </div>
+                                                <div>
+                                                    <h3 className="font-bold text-base">{habit.title}</h3>
+                                                    <p className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.2em] mt-0.5">{habit.xp} XP</p>
+                                                </div>
+                                            </div>
+                                            <Button 
+                                                size="icon" 
+                                                variant="ghost" 
+                                                onClick={() => removeHabit(habit.id)}
+                                                className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-all"
+                                            >
+                                                <Trash2 size={18} />
+                                            </Button>
+                                        </motion.div>
+                                    ))}
+                                </div>
                             </div>
-                            <Button 
-                                size="icon" 
-                                variant="ghost" 
-                                onClick={() => removeHabit(habit.id)}
-                                className="text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
-                            >
-                                <Trash2 size={20} />
-                            </Button>
+                        );
+                    })}
+                    
+                    {habits.length === 0 && (
+                        <div className="text-center py-20 px-6 border-2 border-dashed border-white/5 rounded-[40px]">
+                            <p className="text-muted-foreground font-black uppercase tracking-widest text-xs mb-2">System Empty</p>
+                            <p className="text-white/40 text-sm max-w-xs mx-auto">Click the + button to initialize your first protocol.</p>
                         </div>
-                    ))}
+                    )}
                 </div>
             </div>
           )}
 
-          {activeTab === 'xp' && (
+            {activeTab === 'xp' && (
             <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 px-2">
                 <div className="bg-white/5 border border-white/10 rounded-[48px] p-12 text-center shadow-2xl relative overflow-hidden">
                     <div className="absolute inset-0 bg-primary/5 blur-[80px] rounded-full translate-y-1/2" />
@@ -297,30 +424,90 @@ export default function Dashboard() {
                 <div className="grid grid-cols-2 gap-4">
                     <div className="bg-white/5 border border-white/10 rounded-[40px] p-10">
                         <p className="text-[10px] uppercase font-black text-muted-foreground tracking-widest mb-2 opacity-40">Today</p>
-                        <div className="text-4xl font-display font-black text-primary">+{user.todayCompletions.length * 45}</div>
+                        <div className="text-4xl font-display font-black text-primary">
+                          +{user.todayCompletions.reduce((acc, id) => {
+                            const h = habits.find(h => h.id === id);
+                            return acc + (h ? h.xp : 0);
+                          }, 0)}
+                        </div>
                     </div>
                     <div className="bg-white/5 border border-white/10 rounded-[40px] p-10">
                         <p className="text-[10px] uppercase font-black text-muted-foreground tracking-widest mb-2 opacity-40">Streak</p>
                         <div className="text-4xl font-display font-black text-white">{user.streak}D</div>
                     </div>
                 </div>
+            </div>
+          )}
 
-                <div className="space-y-6 pt-4">
-                    <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-primary px-2">Recent Log</h3>
-                    {[
-                        { title: 'Consistency King', date: 'Yesterday', xp: '+250' },
-                        { title: 'Sprint Starter', date: '2 days ago', xp: '+100' },
-                        { title: 'Perfect Day', date: '3 days ago', xp: '+500' },
-                    ].map((item, i) => (
-                        <div key={i} className="flex items-center justify-between p-7 bg-white/5 rounded-3xl border border-white/5 shadow-sm">
-                            <div>
-                                <div className="font-black text-sm uppercase tracking-widest">{item.title}</div>
-                                <div className="text-[9px] text-muted-foreground uppercase font-black tracking-widest mt-1 opacity-50">{item.date}</div>
-                            </div>
-                            <div className="text-primary font-display font-bold text-xl tracking-tighter">{item.xp}</div>
+          {/* Library Tab */}
+          {activeTab === 'library' && (
+            <div className="space-y-4 animate-in fade-in pb-10">
+              <div className="px-2 mb-6">
+                <h2 className="text-xl font-display font-black tracking-widest italic mb-1">PROTOCOL LIBRARY</h2>
+                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">Install pre-built systems</p>
+              </div>
+
+              {PROTOCOL_BUNDLES.map((bundle) => {
+                const Icon = bundle.icon;
+                const isInstalled = installedBundles.has(bundle.id);
+                
+                return (
+                  <div
+                    key={bundle.id}
+                    className="bg-white/5 border border-white/10 rounded-[24px] p-6 hover:border-primary/20 transition-all"
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className={cn(
+                          "h-12 w-12 rounded-full flex items-center justify-center border-2",
+                          bundle.color === "purple" && "border-purple-500/20 bg-purple-500/10 text-purple-500",
+                          bundle.color === "red" && "border-red-500/20 bg-red-500/10 text-red-500",
+                          bundle.color === "yellow" && "border-yellow-500/20 bg-yellow-500/10 text-yellow-500"
+                        )}>
+                          <Icon size={24} />
                         </div>
-                    ))}
-                </div>
+                        <div>
+                          <h3 className="font-display font-black text-lg tracking-tight">{bundle.name}</h3>
+                          <p className="text-[10px] uppercase font-black tracking-widest text-muted-foreground">{bundle.difficulty}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <p className="text-sm text-muted-foreground mb-4">{bundle.description}</p>
+
+                    <div className="space-y-2 mb-4">
+                      {bundle.habits.map((habit, idx) => (
+                        <div key={idx} className="flex items-center justify-between text-xs py-1.5 px-3 bg-white/5 rounded-lg">
+                          <span className="text-white/80">{habit.title}</span>
+                          <span className="text-primary font-bold">+{habit.xp} XP</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    <Button
+                      onClick={() => handleInstall(bundle)}
+                      disabled={isInstalled || installMutation.isPending}
+                      className={cn(
+                        "w-full font-black uppercase tracking-wider h-12 rounded-xl transition-all",
+                        isInstalled 
+                          ? "bg-white/10 text-white/40 cursor-not-allowed" 
+                          : "bg-primary text-black hover:bg-primary/90 shadow-lg shadow-primary/20"
+                      )}
+                    >
+                      {isInstalled ? (
+                        <>
+                          <CheckCircle2 className="mr-2 h-4 w-4" />
+                          Installed
+                        </>
+                      ) : installMutation.isPending ? (
+                        "Installing..."
+                      ) : (
+                        `Install ${bundle.habits.length} Habits`
+                      )}
+                    </Button>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>

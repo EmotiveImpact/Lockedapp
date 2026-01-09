@@ -13,6 +13,7 @@ export type Habit = {
 export type DayStatus = 'pending' | 'completed' | 'failed';
 
 export type User = {
+  id: number;
   name: string;
   level: number;
   currentXp: number;
@@ -20,6 +21,7 @@ export type User = {
   streak: number;
   todayCompletions: number[]; // array of habit IDs
   sprintDays: DayStatus[]; // 28 days status
+  profilePhoto?: string | null;
 };
 
 type HabitsContextType = {
@@ -38,6 +40,7 @@ type HabitsContextType = {
 const HabitsContext = createContext<HabitsContextType | undefined>(undefined);
 
 const DEFAULT_USER: User = {
+  id: 0,
   name: 'Guest User',
   level: 0,
   currentXp: 0,
@@ -45,6 +48,7 @@ const DEFAULT_USER: User = {
   streak: 0,
   todayCompletions: [],
   sprintDays: Array(28).fill('pending'),
+  profilePhoto: null,
 };
 
 export function HabitsProvider({ children }: { children: ReactNode }) {
@@ -53,31 +57,27 @@ export function HabitsProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Initialize app on mount
+  // No separate initApp needed now as data is initialized on registration
   useEffect(() => {
-    api.initApp().then(() => {
-      setInitialized(true);
-      queryClient.invalidateQueries({ queryKey: ['user'] });
-      queryClient.invalidateQueries({ queryKey: ['habits'] });
-    }).catch(err => {
-      console.error('Failed to initialize app:', err);
-      setInitialized(true);
-    });
-  }, [queryClient]);
+    setInitialized(true);
+  }, []);
 
   // Fetch user data
-  const { data: user = DEFAULT_USER, isLoading: userLoading } = useQuery({
+  const { data: userData, isLoading: userLoading } = useQuery({
     queryKey: ['user'],
     queryFn: api.getUser,
     enabled: initialized,
     refetchOnWindowFocus: false,
   });
 
+  // Don't fallback to DEFAULT_USER - let auth redirect handle it
+  const user = userData || DEFAULT_USER;
+
   // Fetch habits
   const { data: habits = [], isLoading: habitsLoading } = useQuery({
     queryKey: ['habits'],
     queryFn: api.getHabits,
-    enabled: initialized,
+    enabled: initialized && !!userData,
     refetchOnWindowFocus: false,
   });
 

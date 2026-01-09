@@ -7,8 +7,9 @@ import { z } from "zod";
 export const users = sqliteTable("users", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   username: text("username").notNull().unique(),
-  password: text("password"),
+  password: text("password").notNull(),
   name: text("name").notNull().default("Guest User"),
+  profilePhoto: text("profile_photo"), // URL or path to profile photo
   createdAt: integer("created_at", { mode: "timestamp" }).notNull().default(sql`(unixepoch())`),
 });
 

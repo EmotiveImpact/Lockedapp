@@ -29,6 +29,7 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  initializeUserData(userId: number): Promise<void>;
   
   // Habit methods
   getHabits(userId: number): Promise<Habit[]>;
@@ -43,6 +44,9 @@ export interface IStorage {
   getTodayCompletions(userId: number, date: string): Promise<number[]>; // Returns habit IDs
   toggleHabitCompletion(userId: number, habitId: number, date: string): Promise<boolean>; // Returns new state
   clearTodayCompletions(userId: number, date: string): Promise<void>;
+  
+  // Leaderboard
+  getLeaderboard(limit: number): Promise<{ id: number; name: string; xp: number; streak: number; rank: number }[]>;
 }
 
 export class DrizzleStorage implements IStorage {
@@ -159,6 +163,57 @@ export class DrizzleStorage implements IStorage {
     await db
       .delete(dailyCompletions)
       .where(and(eq(dailyCompletions.userId, userId), eq(dailyCompletions.date, date)));
+  }
+  async initializeUserData(userId: number): Promise<void> {
+    // Create default habits
+    const defaultHabits = [
+      { title: 'Wake up at 5 AM', xp: 50, category: 'routine' as const },
+      { title: 'Cold shower', xp: 40, category: 'health' as const },
+      { title: 'Write in journal', xp: 30, category: 'mindset' as const },
+      { title: 'No social media', xp: 45, category: 'mindset' as const },
+      { title: 'Practice gratitude', xp: 35, category: 'mindset' as const },
+      { title: 'Eat clean', xp: 45, category: 'health' as const },
+      { title: '8 hours sleep', xp: 40, category: 'health' as const },
+      { title: '45min Workout', xp: 60, category: 'fitness' as const },
+    ];
+    
+    for (const habit of defaultHabits) {
+      await this.createHabit(userId, habit.title, habit.xp, habit.category);
+    }
+    
+    // Initialize user progress
+    await this.updateUserProgress(userId, {
+      currentXp: 120,
+      level: 0,
+      streak: 3,
+      sprintDays: JSON.stringify(Array(28).fill('pending').map((s: string, i: number) => i < 2 ? 'completed' : s)),
+      lastCompletedDate: null,
+    });
+  }
+
+  // Leaderboard method
+  async getLeaderboard(limit: number): Promise<{ id: number; name: string; xp: number; streak: number; rank: number }[]> {
+    // Join users with their progress, order by XP descending
+    const results = await db
+      .select({
+        id: users.id,
+        name: users.name,
+        xp: userProgress.currentXp,
+        streak: userProgress.streak,
+      })
+      .from(users)
+      .leftJoin(userProgress, eq(users.id, userProgress.userId))
+      .orderBy(desc(userProgress.currentXp))
+      .limit(limit);
+
+    // Add rank to each entry
+    return results.map((entry, index) => ({
+      id: entry.id,
+      name: entry.name,
+      xp: entry.xp || 0,
+      streak: entry.streak || 0,
+      rank: index + 1,
+    }));
   }
 }
 
