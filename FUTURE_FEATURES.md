@@ -1,5 +1,6 @@
 # LOCKED IN - Future Features Roadmap
 
+test
 This document outlines features and improvements to be implemented by future agents or developers. The core MVP is now functional with SQLite persistence, but these enhancements will make it a production-ready application.
 
 ---
